@@ -1,0 +1,32 @@
+[package]
+name = "mdbook-theme"
+version = "0.1.0"
+authors = ["zjpCN <jiping_zhou@foxmail.com>"]
+edition = "2018"
+keywords = ["book", "theme", "rustbook", "markdown"]
+license = "MIT OR MPL-2.0"
+readme = "README.md"
+repository = ""
+description = "A preprocessor and a backend to config theme for mdbook, especially with a pagetoc on the right"
+
+[dependencies]
+clap = "*"
+mdbook = "*"
+semver = "*"
+serde_json = "*"
+anyhow = "*"
+
+serde = "*"
+serde_derive = "*"
+# serde_repr = "*"
+
+# regex = "*"
+
+[[bin]]
+name = "mdbook-theme-pre"
+path = "src/bin/pre.rs"
+
+[[bin]]
+name = "mdbook-theme-post"
+path = "src/bin/post.rs"
+

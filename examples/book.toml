@@ -1,0 +1,14 @@
+[book]
+authors = ["zjp"]
+language = "en"
+multilingual = true
+src = "src"
+title = "theme-example"
+
+[preprocessor.theme-pre]
+blow-up = true
+
+[output.theme-post]
+ignores = ["Chapter 1"]
+deny-odds = true
+
