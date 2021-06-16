@@ -239,7 +239,7 @@ dependencies = [
  "serde_derive",
  "serde_json",
  "strum",
- "strum_macros",
+ "strum_macros 0.18.0",
 ]
 
 [[package]]
@@ -822,6 +822,10 @@ dependencies = [
 [[package]]
 name = "mdbook-theme"
 version = "0.1.0"
+dependencies = [
+ "mdbook",
+ "strum_macros 0.21.1",
+]
 
 [[package]]
 name = "memchr"
@@ -1118,6 +1122,16 @@ checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
 [[package]]
 name = "pre"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "clap",
+ "mdbook",
+ "semver",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_repr",
+]
 
 [[package]]
 name = "precomputed-hash"
@@ -1479,6 +1493,18 @@ name = "strum_macros"
 version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "87c85aa3f8ea653bfd3ddf25f7ee357ee4d204731f6aa9ad04002306f6e2774c"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.21.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d06aaeeee809dbc59eb4556183dd927df67db1540de5be8d3ec0b6636358a5ec"
 dependencies = [
  "heck",
  "proc-macro2",
