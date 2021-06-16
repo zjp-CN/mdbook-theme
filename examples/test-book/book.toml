@@ -3,14 +3,16 @@ authors = ["zjp"]
 language = "en"
 multilingual = true
 src = "src"
-title = "theme-example"
+title = "test-book"
 
-[preprocessor.theme-pre]
+[preprocessor.demo-pre]
 blow-up = true
 
 [output.html]
+[output.html.playground]
+editable = true
 
-[output.theme-post]
+[output.demo-post]
 ignores = ["Chapter 1"]
 deny-odds = true
 write-file = true
