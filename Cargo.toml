@@ -12,7 +12,8 @@ exclude = ["example"]
 
 [dependencies]
 #clap = "*"
-#mdbook = "*"
+mdbook = "*"
+strum_macros = "0.21.1"
 #semver = "*"
 #serde_json = "*"
 #anyhow = "*"
