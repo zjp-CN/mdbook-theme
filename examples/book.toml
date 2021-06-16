@@ -8,7 +8,10 @@ title = "theme-example"
 [preprocessor.theme-pre]
 blow-up = true
 
+[output.html]
+
 [output.theme-post]
 ignores = ["Chapter 1"]
 deny-odds = true
+write-file = true
 
