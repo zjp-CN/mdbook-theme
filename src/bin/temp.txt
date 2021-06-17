@@ -1,0 +1,11 @@
+
+/// from `mdboook::theme` by default or css files provided by a user
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+struct CssContent(&'static str);
+// impl Debug for DefaultCss {
+//     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
+//         write!(f, "{} {}", print_type_of(self), stringify!(self))
+//     }p
+// }
+//
+// fn print_type_of<T>(_: &T) -> &'static str { std::any::type_name::<T>() }
