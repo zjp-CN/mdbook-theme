@@ -99,8 +99,6 @@ impl Ready {
     }
 
     fn add(&mut self, elem: (Item, Value)) { self.0.push(elem); }
-
-    fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
 }
 
 #[rustfmt::skip]
@@ -211,13 +209,12 @@ impl Content {
         }
     }
 
-    fn get<'a>(&'a self) -> &'a str { &self.0 }
+    fn get(&self) -> &str { &self.0 }
 
-    fn get_mut<'a>(&'a mut self) -> &'a mut String { &mut self.0 }
+    fn get_mut(&mut self) -> &mut str { &mut self.0 }
 
-    /// hypothesis: `item: value;`
-    /// better to use `regex`, but for now I'm not ready :(
     fn find(&self, pat: &str) -> Result<Pos> {
+        // hypothesis: `item: value;`
         let text = self.get();
         let p1 = text.find(pat).ok_or(Error::NotFound)? + pat.len() + 2;
         let p2 = p1 + text[p1..].find(';').ok_or(Error::NotFound)?;
@@ -227,8 +224,7 @@ impl Content {
 
     fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
         let Pos(p1, p2) = self.find(pat)?;
-        self.get_mut().replace_range(p1..p2, sub);
-        dbg!(&self.get()[p1 - 10..p2 + 5]);
+        self.get()[p1..p2] = sub;
         Ok(())
     }
 }
@@ -264,15 +260,11 @@ impl Theme {
 
     /// final content to be written into `theme` dir/buffer
     fn cotent(&mut self) {
-        // TODO: need to consider a user's file
-        let mut content = Content::content(self.cssfile);
-        // dbg!(&text);
-        // let (item, value) = self.item_value(0).unwrap();
-        // dbg!(item, value);
-        // content.replace(item.get(), value.get());
-        for (item, value) in self.ready.item_value() {
-            content.replace(item.get(), value.get());
-        }
-        self.content = content;
+        let content = Content::content(self.cssfile); // TODO: need to consider a user's file
+                                                      // dbg!(&text);
+        let (item, value) = self.item_value(0).unwrap();
+        dbg!(item, value);
+
+        dbg!(content.find(item.get()));
     }
 }
