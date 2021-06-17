@@ -823,6 +823,7 @@ dependencies = [
 name = "mdbook-theme"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "mdbook",
  "strum_macros 0.21.1",
 ]

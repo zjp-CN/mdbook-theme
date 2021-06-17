@@ -14,6 +14,7 @@ exclude = ["example"]
 #clap = "*"
 mdbook = "*"
 strum_macros = "0.21.1"
+lazy_static = "1.4.0"
 #semver = "*"
 #serde_json = "*"
 #anyhow = "*"
