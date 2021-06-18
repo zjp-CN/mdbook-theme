@@ -95,16 +95,6 @@ impl Ready {
         DEFAULT.iter().filter(|(c, _, _)| *c == css).map(|(_, i, v)| (*i, *v)).collect()
     }
 
-    /// `user_config` can be derive from `iter::collect`
-    fn merge(&mut self, css: CssFile) -> Self {
-        let mut default = Ready::get(css);
-        // let mut default = Ready::default();
-        default.0.append(&mut self.0);
-        default.0.sort_by_key(|(i, _)| *i);
-        default.0.dedup();
-        default.0.into_iter().collect()
-    }
-
     fn add(&mut self, elem: (Item, Value)) { self.0.push(elem); }
 
     pub fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
@@ -146,11 +136,49 @@ impl Content {
     }
 
     /// update the content
-    pub fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
+    fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
         let Pos(p1, p2) = self.find(pat)?;
         self.get_mut().replace_range(p1..p2, sub);
-        dbg!(&self.get()[p1 - 10..p2 + 5]);
+        dbg!(&self.get()[p1 - 20..p2 + 5]);
         Ok(())
+    }
+
+    fn find_insert(&mut self, insert: &str, find1: &str, find2: &str) {
+        let text = self.get();
+        let mut pos = text.find(find1).unwrap();
+        pos = pos + text[pos..].find(find2).unwrap() - 1;
+        self.get_mut().replace_range(pos..pos + 1, &insert);
+    }
+
+    #[rustfmt::skip]
+    fn variables(&mut self, pat: &str, sub: &str) {
+        dbg!(pat, sub);
+        // TODO: a special case: `mobile-content-max-width`
+        if pat == "mobile-content-max-width" {
+            // insert-content
+            // let text = self.get();
+            // let mut pos = text.find("/* Themes */").unwrap()-1;
+
+            let content_max = format!(
+"\n@media only screen and (max-width:1439px) {{
+ :root{{
+    --content-max-width: {};
+  }}
+}}\n\n",sub);
+
+            self.find_insert(&content_max, "}", "/* Themes */")
+            // self.get_mut().replace_range(pos..pos + 1, &content_max);
+        } else {
+            if self.replace(pat, sub).is_err() {
+                // insert-content: `root{...}` part
+                // let text = self.get();
+                // let mut pos = text.find(":root").unwrap();
+                // pos = pos+text[pos..].find("}\n").unwrap()-1;
+                // let insert_content = format!("\n    --{}: {};\n", pat, sub);
+                // self.get_mut().replace_range(pos..pos + 1, &insert_content);
+                self.find_insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n")
+            }
+        }
     }
 }
 
@@ -214,35 +242,32 @@ impl Theme {
         self
     }
 
+    /// merge user's config
+    ///
+    /// If a user did not set `pagetoc = "true"` , `Ready` will get en **empty** default.
+    /// But he can still set something only working with pagetoc's presence,
+    /// even though that setting will *not* work (and it will lie in css files).
+    ///
+    /// More likely, a user may actually set `pagetoc = "true"` ,
+    /// then he'll get a **full** default.
+    ///
+    /// Both circumstances are **ready** to go!
     fn ready(&mut self) -> &mut Self {
-        self.ready = self.ready.merge(self.cssfile);
+        let mut default = if self.pagetoc { Ready::get(self.cssfile) } else { Ready::default() };
+        default.0.append(&mut self.ready.0);
+        default.0.reverse();
+        default.0.sort_by_key(|(i, _)| *i);
+        default.0.dedup_by(|(ref a, _), (ref b, _)| b.eq(a));
+        self.ready = default.0.into_iter().collect();
         self
     }
 
     #[rustfmt::skip]
-    pub   fn from(cssfile: CssFile, ready: Ready, pagetoc: bool) -> Self {
+    pub fn from(cssfile: CssFile, ready: Ready, pagetoc: bool) -> Self {
         Self { cssfile, ready, pagetoc, content: Content::default() }
     }
 
     pub fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
-
-    /// final content to be written into `theme` dir/buffer
-    fn cotent(&mut self) -> &str {
-        // empty content means not having processed the content
-        if self.content.get() == "" {
-            // TODO: need to consider a user's file
-            let mut content = Content::from(self.cssfile);
-            // dbg!(&text);
-            // let (item, value) = self.item_value(0).unwrap();
-            // dbg!(item, value);
-            // content.replace(item.get(), value.get());
-            for (item, value) in self.ready.item_value() {
-                content.replace(item.get(), value.get());
-            }
-            self.content = content;
-        }
-        self.content.get()
-    }
 
     /// create a css file on demand
     fn create_theme_file(&self) -> Result<()> {
@@ -257,5 +282,33 @@ impl Theme {
     pub(self) fn create_theme_dirs() -> Result<()> {
         std::fs::create_dir_all("theme/css").map_err(|_| Error::DirNotCreated)?;
         Ok(())
+    }
+
+    /// final content to be written into `theme` dir
+    fn cotent(&mut self) -> &str {
+        dbg!(&self);
+        // empty content means not having processed the content
+        if self.content.get() == "" {
+            // TODO: need to consider a user's file
+            self.content = Content::from(self.cssfile);
+            self.content_process();
+        }
+        self.content.get()
+    }
+
+    /// process contents of different files
+    fn content_process(&mut self) {
+        match self.cssfile {
+            CssFile::Variables => self.process_variables(),
+            // TODO: add more branches
+            _ => (),
+        }
+    }
+
+    /// update content in `variables.css`
+    fn process_variables(&mut self) {
+        for (item, value) in self.ready.item_value() {
+            self.content.variables(item.get(), value.get());
+        }
     }
 }
