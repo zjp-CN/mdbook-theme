@@ -1,7 +1,8 @@
 #[derive(Debug)]
 pub enum Error {
-    NotFound,
-    FilesNotCreated,
+    StrNotFound,
+    FileNotCreated,
+    DirNotCreated,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

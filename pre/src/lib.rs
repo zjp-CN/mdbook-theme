@@ -25,12 +25,10 @@ impl Preprocessor for Nop {
             }
         }
 
-        let theme_config = theme::config::themes();
-
-        dbg!(&theme_config);
+        theme::config::process();
 
         Ok(book)
     }
 
-    fn supports_renderer(&self, renderer: &str) -> bool { renderer != "not-supported" }
+    // fn supports_renderer(&self, renderer: &str) -> bool { renderer != "not-supported" }
 }

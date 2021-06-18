@@ -9,14 +9,14 @@ use crate::error::{Error, Result};
 
 pub mod config;
 
-/// TODO: consider to remove tuples
+/// All cssfiles to be modified.
+/// `Pagetoc` is not only single file
 #[rustfmt::skip]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum CssFile { Variables, General, Chrome, Index, PagetocJs, PagetocCss, Custom, Pagetoc, }
-// `Pagetoc` is not only single file
 
 impl CssFile {
-    fn filename(&self) -> &str {
+    pub fn filename(&self) -> &str {
         match self {
             CssFile::Variables => "css/variables.css",
             _ => "temp.css",
@@ -43,7 +43,7 @@ impl CssFile {
 /// 1. supported items (config args)
 /// 2. item of `preprocessor.theme-pre` table in book.toml
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-struct Item(&'static str);
+pub struct Item(&'static str);
 
 /// useful when looking up in `HashMap<&Item, _>`
 impl Borrow<str> for &Item {
@@ -51,17 +51,18 @@ impl Borrow<str> for &Item {
 }
 
 impl Item {
-    fn get(&self) -> &str { self.0 }
+    pub fn get(&self) -> &str { self.0 }
 }
 
 /// by default or specified by a user
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-struct Value(&'static str);
+pub struct Value(&'static str);
 
 impl Value {
-    fn get(&self) -> &str { self.0 }
+    pub fn get(&self) -> &str { self.0 }
 }
 
+/// configs ready to go
 #[derive(Debug, Clone)]
 pub struct Ready(Vec<(Item, Value)>);
 
@@ -69,7 +70,7 @@ impl Default for Ready {
     fn default() -> Self { Self(vec![]) }
 }
 
-/// get `Ready` by using `iter.collect
+/// get `Ready` by using `iter.collect()`
 impl FromIterator<(Item, Value)> for Ready {
     fn from_iter<I: IntoIterator<Item = (Item, Value)>>(iter: I) -> Self {
         let mut r = Self::default();
@@ -91,10 +92,7 @@ impl Ready {
     }
 
     fn from(css: CssFile) -> Self {
-        DEFAULT.into_iter()
-               .filter(|(c, _, _)| *c == css)
-               .map(|(_, i, v)| (*i, *v))
-               .collect()
+        DEFAULT.iter().filter(|(c, _, _)| *c == css).map(|(_, i, v)| (*i, *v)).collect()
     }
 
     /// `user_config` can be derive from `iter::collect`
@@ -109,7 +107,7 @@ impl Ready {
 
     fn add(&mut self, elem: (Item, Value)) { self.0.push(elem); }
 
-    fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
+    pub fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
 }
 
 #[derive(Debug, Clone)]
@@ -124,7 +122,7 @@ struct Pos(usize, usize);
 
 impl Content {
     /// TODO: add more contents
-    fn content(cssfile: CssFile) -> Self {
+    pub fn from(cssfile: CssFile) -> Self {
         match cssfile {
             CssFile::Variables => Content(String::from(str::from_utf8(VARIABLES_CSS).unwrap())),
             _ => Content::default(),
@@ -132,23 +130,23 @@ impl Content {
     }
 
     /// for viewing the content
-    fn get(&self) -> &str { &self.0 }
+    pub fn get(&self) -> &str { &self.0 }
 
     /// for modifying the content
-    fn get_mut(&mut self) -> &mut String { &mut self.0 }
+    pub fn get_mut(&mut self) -> &mut String { &mut self.0 }
 
     /// hypothesis: `item: value;`
     /// better to use `regex`, but for now I'm not ready :(
     fn find(&self, pat: &str) -> Result<Pos> {
         let text = self.get();
-        let p1 = text.find(pat).ok_or(Error::NotFound)? + pat.len() + 2;
-        let p2 = p1 + text[p1..].find(';').ok_or(Error::NotFound)?;
+        let p1 = text.find(pat).ok_or(Error::StrNotFound)? + pat.len() + 2;
+        let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
         dbg!(&text[p1..p2]);
         Ok(Pos(p1, p2))
     }
 
     /// update the content
-    fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
+    pub fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
         let Pos(p1, p2) = self.find(pat)?;
         self.get_mut().replace_range(p1..p2, sub);
         dbg!(&self.get()[p1 - 10..p2 + 5]);
@@ -157,20 +155,20 @@ impl Content {
 }
 
 #[rustfmt::skip]
-macro_rules! default_item {
+macro_rules! default {
     ($idt:ident, $e1:expr, $e2:expr) => { (CssFile::$idt, Item($e1), Value($e2)) };
 }
 
 // TODO: add more static variables, and may remove the needless `Value` and tuples
-static DEFAULT: &[(CssFile, Item, Value)] =
-    &[default_item!(Pagetoc, "pagetoc", "true"),
-      default_item!(Variables, "sidebar-width", "140px"),
-      default_item!(Variables, "page-padding", "15px"),
-      default_item!(Variables, "content-max-width", "82%"),
-      default_item!(Variables, "menu-bar-height", "40px"),
-      default_item!(Variables, "pagetoc-width", "13%"),
-      default_item!(Variables, "pagetoc-fontsize", "14.5px"),
-      default_item!(Variables, "mobile-content-max-width", "98%")];
+pub static DEFAULT: &[(CssFile, Item, Value)] =
+    &[default!(Pagetoc, "pagetoc", "true"),
+      default!(Variables, "sidebar-width", "140px"),
+      default!(Variables, "page-padding", "15px"),
+      default!(Variables, "content-max-width", "82%"),
+      default!(Variables, "menu-bar-height", "40px"),
+      default!(Variables, "pagetoc-width", "13%"),
+      default!(Variables, "pagetoc-fontsize", "14.5px"),
+      default!(Variables, "mobile-content-max-width", "98%")];
 
 lazy_static! {
     static ref DEFAULT_HASHMAP: HashMap<&'static Item, (&'static CssFile, &'static Value)> =
@@ -201,7 +199,7 @@ impl Default for Theme {
 impl Theme {
     /// TODO: checking user's css files is not done
     /// find pagetoc and user's css files
-    fn process(mut self) -> Self {
+    pub fn process(mut self) -> Self {
         self.cssfile(None).ready().cotent();
         self.create_theme_file();
         self
@@ -210,7 +208,7 @@ impl Theme {
     /// TODO: `user_config` needs to search and parse css files specified by a user
     /// and the signature finally is `user_config: Option<Path>`
     fn cssfile(&mut self, user_config: Option<&'static str>) -> &mut Self {
-        if let Some(_) = user_config {
+        if user_config.is_some() {
             self.cssfile = CssFile::Custom;
         }
         self
@@ -222,18 +220,18 @@ impl Theme {
     }
 
     #[rustfmt::skip]
-    fn from(cssfile: CssFile, ready: Ready, pagetoc: bool) -> Self {
+    pub   fn from(cssfile: CssFile, ready: Ready, pagetoc: bool) -> Self {
         Self { cssfile, ready, pagetoc, content: Content::default() }
     }
 
-    fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
+    pub fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
 
     /// final content to be written into `theme` dir/buffer
     fn cotent(&mut self) -> &str {
         // empty content means not having processed the content
         if self.content.get() == "" {
             // TODO: need to consider a user's file
-            let mut content = Content::content(self.cssfile);
+            let mut content = Content::from(self.cssfile);
             // dbg!(&text);
             // let (item, value) = self.item_value(0).unwrap();
             // dbg!(item, value);
@@ -251,13 +249,13 @@ impl Theme {
         use mdbook::utils::fs::write_file;
         write_file(std::path::Path::new("theme"),
                    self.cssfile.filename(),
-                   self.content.get().as_bytes()).map_err(|_| Error::FilesNotCreated)?;
+                   self.content.get().as_bytes()).map_err(|_| Error::FileNotCreated)?;
         Ok(())
     }
 
     /// create the dirs on demand
-    pub(crate) fn create_theme_dirs() -> Result<()> {
-        std::fs::create_dir_all("theme/css").map_err(|_| Error::FilesNotCreated)?;
+    pub(self) fn create_theme_dirs() -> Result<()> {
+        std::fs::create_dir_all("theme/css").map_err(|_| Error::DirNotCreated)?;
         Ok(())
     }
 }
