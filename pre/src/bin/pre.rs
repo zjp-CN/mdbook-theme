@@ -33,7 +33,7 @@ fn handle_preprocessing() -> Result<(), Error> {
     let book_version = Version::parse(&ctx.mdbook_version)?;
     let version_req = VersionReq::parse(mdbook::MDBOOK_VERSION)?;
 
-    if version_req.matches(&book_version) != true {
+    if !version_req.matches(&book_version) {
         eprintln!("Warning: The {} plugin was built against version {} of mdbook, but we're \
                    being called from version {}",
                   Nop.name(),
@@ -49,7 +49,7 @@ fn handle_preprocessing() -> Result<(), Error> {
 
 fn handle_supports(sub_args: &ArgMatches) -> ! {
     let renderer = sub_args.value_of("renderer").expect("Required argument");
-    let supported = Nop.supports_renderer(&renderer);
+    let supported = Nop.supports_renderer(renderer);
 
     // Signal whether the renderer is supported by exiting with 1 or 0.
     if supported {
