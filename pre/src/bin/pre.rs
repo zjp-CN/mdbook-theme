@@ -1,7 +1,7 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
-use pre::Nop;
+use mdbook_theme_pre::Nop;
 use semver::{Version, VersionReq};
 use std::io;
 use std::process;

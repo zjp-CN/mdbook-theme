@@ -1,7 +1,13 @@
+#![allow(unused)]
 use mdbook::book::Book;
 use mdbook::errors::Error;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 
+#[macro_use]
+extern crate lazy_static;
+
+pub mod error;
+pub mod theme;
 pub struct Nop;
 
 // impl Nop {
@@ -18,6 +24,10 @@ impl Preprocessor for Nop {
                 eprintln!("Boom!!!From preprocessor...");
             }
         }
+
+        let theme_config = theme::config::themes();
+
+        dbg!(&theme_config);
 
         Ok(book)
     }
