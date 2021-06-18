@@ -1,6 +1,5 @@
 use super::{Item, Ready, Theme, Value, DEFAULT_HASHMAP};
 use crate::error::{Error, Result};
-// use mdbook::theme::Theme as MdTheme;
 use std::collections::HashMap;
 
 /// TODO: `fn themes(user_config: HashMap<_, _>)`
@@ -9,6 +8,7 @@ pub fn process() {
     let mut input = HashMap::new();
     input.insert("sidebar-width", "200px");
     input.insert("pagetoc-width", "15%");
+    input.insert("mobile-content-max-width", "99%");
     // input.insert("pagetoc", "true");
 
     let pagetoc = input.get("pagetoc").map_or(false, |p| p.parse::<bool>().unwrap_or(false));
@@ -27,9 +27,4 @@ pub fn process() {
     config.into_iter()
           .map(|(css, ready)| Theme::from(*css, Ready(ready), pagetoc).process())
           .last();
-    // dbg!(&theme_config);
-    // let mut theme = theme_config[0].clone();
-    // theme.cotent();
-    // dbg!(theme.cotent());
-    // theme_config
 }
