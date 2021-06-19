@@ -1,4 +1,4 @@
-use super::{Item, Ready, Theme, Value, DEFAULT_HASHMAP};
+use super::{CssFile, Item, Ready, Theme, Value, DEFAULT_HASHMAP};
 use crate::error::{Error, Result};
 use std::collections::HashMap;
 
@@ -9,9 +9,14 @@ pub fn process() {
     input.insert("sidebar-width", "200px");
     input.insert("pagetoc-width", "15%");
     input.insert("mobile-content-max-width", "99%");
+    // `get_preprocessor` returns `Map<String, Value>`
+    // so `"true"` actually is a wrapped `true`
     // input.insert("pagetoc", "true");
 
+    Theme::create_theme_dirs(); // create all dirs just once
     let pagetoc = input.get("pagetoc").map_or(false, |p| p.parse::<bool>().unwrap_or(false));
+    // set all pagetoc related defaults
+    Theme::from(CssFile::Pagetoc, Ready::default(), pagetoc).pagetoc();
 
     let mut config = HashMap::new();
 
@@ -23,7 +28,6 @@ pub fn process() {
          })
          .last();
 
-    Theme::create_theme_dirs(); // create all dirs just by once
     config.into_iter()
           .map(|(css, ready)| Theme::from(*css, Ready(ready), pagetoc).process())
           .last();

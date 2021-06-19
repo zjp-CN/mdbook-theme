@@ -6,4 +6,4 @@ src = "src"
 title = "pre"
 
 [preprocessor.theme-pre]
-blow-up = true
+#blow-up = true

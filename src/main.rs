@@ -38,11 +38,11 @@ struct Item(&'static str);
 
 /// useful when looking up in `HashMap<&Item, _>`
 impl Borrow<str> for &Item {
-    fn borrow(&self) -> &'static str { self.0 }
+    fn borrow(&self) -> &str { self.0 }
 }
 
 impl Item {
-    fn get(self) -> &'static str { self.0 }
+    fn get(&self) -> &str { self.0 }
 }
 
 /// by default or specified by a user
@@ -50,7 +50,7 @@ impl Item {
 struct Value(&'static str);
 
 impl Value {
-    fn get(self) -> &'static str { self.0 }
+    fn get(&self) -> &str { self.0 }
 }
 
 #[derive(Debug, Clone)]
@@ -173,7 +173,7 @@ fn main() {
     dbg!(&theme_config);
 
     let mut theme = theme_config[0].clone();
-    theme.cotent();
+    dbg!(theme.cotent());
 }
 
 #[derive(Debug, Clone)]
@@ -203,7 +203,7 @@ impl Default for Content {
 struct Pos(usize, usize);
 
 impl Content {
-    /// TODO: add more contens
+    /// TODO: add more contents
     fn content(cssfile: CssFile) -> Self {
         match cssfile {
             CssFile::Variables => Content(String::from(str::from_utf8(VARIABLES_CSS).unwrap())),
@@ -211,9 +211,11 @@ impl Content {
         }
     }
 
-    fn get<'a>(&'a self) -> &'a str { &self.0 }
+    /// for viewing the content
+    fn get(&self) -> &str { &self.0 }
 
-    fn get_mut<'a>(&'a mut self) -> &'a mut String { &mut self.0 }
+    /// for modifying the content
+    fn get_mut(&mut self) -> &mut String { &mut self.0 }
 
     /// hypothesis: `item: value;`
     /// better to use `regex`, but for now I'm not ready :(
@@ -225,6 +227,7 @@ impl Content {
         Ok(Pos(p1, p2))
     }
 
+    /// update the content
     fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
         let Pos(p1, p2) = self.find(pat)?;
         self.get_mut().replace_range(p1..p2, sub);
@@ -263,16 +266,20 @@ impl Theme {
     fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
 
     /// final content to be written into `theme` dir/buffer
-    fn cotent(&mut self) {
-        // TODO: need to consider a user's file
-        let mut content = Content::content(self.cssfile);
-        // dbg!(&text);
-        // let (item, value) = self.item_value(0).unwrap();
-        // dbg!(item, value);
-        // content.replace(item.get(), value.get());
-        for (item, value) in self.ready.item_value() {
-            content.replace(item.get(), value.get());
+    fn cotent(&mut self) -> &str {
+        // empty content means not having processed the content
+        if self.content.get() == "" {
+            // TODO: need to consider a user's file
+            let mut content = Content::content(self.cssfile);
+            // dbg!(&text);
+            // let (item, value) = self.item_value(0).unwrap();
+            // dbg!(item, value);
+            // content.replace(item.get(), value.get());
+            for (item, value) in self.ready.item_value() {
+                content.replace(item.get(), value.get());
+            }
+            self.content = content;
         }
-        self.content = content;
+        self.content.get()
     }
 }

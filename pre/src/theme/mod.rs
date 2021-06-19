@@ -143,40 +143,30 @@ impl Content {
         Ok(())
     }
 
-    fn find_insert(&mut self, insert: &str, find1: &str, find2: &str) {
+    /// Insert content, and need two str to find.
+    /// The first is to find backwards;
+    /// the second is to locate the inserted space right one char ahead.
+    fn insert(&mut self, insert: &str, find1: &str, find2: &str) -> Result<()> {
         let text = self.get();
-        let mut pos = text.find(find1).unwrap();
-        pos = pos + text[pos..].find(find2).unwrap() - 1;
+        let mut pos = text.find(find1).ok_or(Error::StrNotFound)?;
+        pos = pos + text[pos..].find(find2).ok_or(Error::StrNotFound)? - 1;
         self.get_mut().replace_range(pos..pos + 1, &insert);
+        Ok(())
     }
 
     #[rustfmt::skip]
     fn variables(&mut self, pat: &str, sub: &str) {
-        dbg!(pat, sub);
-        // TODO: a special case: `mobile-content-max-width`
         if pat == "mobile-content-max-width" {
-            // insert-content
-            // let text = self.get();
-            // let mut pos = text.find("/* Themes */").unwrap()-1;
-
-            let content_max = format!(
+            let content = format!(
 "\n@media only screen and (max-width:1439px) {{
  :root{{
     --content-max-width: {};
   }}
-}}\n\n",sub);
-
-            self.find_insert(&content_max, "}", "/* Themes */")
-            // self.get_mut().replace_range(pos..pos + 1, &content_max);
+}}\n\n", sub);
+            self.insert(&content, "}", "/* Themes */");
         } else {
             if self.replace(pat, sub).is_err() {
-                // insert-content: `root{...}` part
-                // let text = self.get();
-                // let mut pos = text.find(":root").unwrap();
-                // pos = pos+text[pos..].find("}\n").unwrap()-1;
-                // let insert_content = format!("\n    --{}: {};\n", pat, sub);
-                // self.get_mut().replace_range(pos..pos + 1, &insert_content);
-                self.find_insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n")
+                self.insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n");
             }
         }
     }
@@ -199,6 +189,7 @@ pub static DEFAULT: &[(CssFile, Item, Value)] =
       default!(Variables, "mobile-content-max-width", "98%")];
 
 lazy_static! {
+    /// TODO: remove `value`
     static ref DEFAULT_HASHMAP: HashMap<&'static Item, (&'static CssFile, &'static Value)> =
         DEFAULT.iter().map(|(css, item, value)| (item, (css, value))).collect();
 }
@@ -227,10 +218,9 @@ impl Default for Theme {
 impl Theme {
     /// TODO: checking user's css files is not done
     /// find pagetoc and user's css files
-    pub fn process(mut self) -> Self {
+    pub fn process(mut self) {
         self.cssfile(None).ready().cotent();
         self.create_theme_file();
-        self
     }
 
     /// TODO: `user_config` needs to search and parse css files specified by a user
@@ -267,7 +257,7 @@ impl Theme {
         Self { cssfile, ready, pagetoc, content: Content::default() }
     }
 
-    pub fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
+    // pub fn item_value(&self, index: usize) -> Option<&(Item, Value)> { self.ready.0.get(index) }
 
     /// create a css file on demand
     fn create_theme_file(&self) -> Result<()> {
@@ -309,6 +299,15 @@ impl Theme {
     fn process_variables(&mut self) {
         for (item, value) in self.ready.item_value() {
             self.content.variables(item.get(), value.get());
+        }
+    }
+
+    /// When `pagetoc = "true"`, a bunch of files need to change;
+    /// when NOT true, do nothing.
+    fn pagetoc(self) {
+        if self.pagetoc && self.cssfile == CssFile::Pagetoc {
+            // TODO
+            Theme::from(CssFile::Variables, Ready::get(CssFile::Variables), true);
         }
     }
 }
