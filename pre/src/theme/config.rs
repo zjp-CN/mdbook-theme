@@ -11,24 +11,26 @@ pub fn process() {
     input.insert("mobile-content-max-width", "99%");
     // `get_preprocessor` returns `Map<String, Value>`
     // so `"true"` actually is a wrapped `true`
-    // input.insert("pagetoc", "true");
+    input.insert("pagetoc", "true");
 
     Theme::create_theme_dirs(); // create all dirs just once
-    let pagetoc = input.get("pagetoc").map_or(false, |p| p.parse::<bool>().unwrap_or(false));
-    // set all pagetoc related defaults
-    Theme::from(CssFile::Pagetoc, Ready::default(), pagetoc).pagetoc();
+
+    if input.remove_entry("pagetoc") // set all pagetoc related defaults
+            .map_or(false, |(_, p)| p.parse::<bool>().unwrap_or(false))
+    {
+        Theme::from(CssFile::Pagetoc, Ready::default()).pagetoc();
+    }
 
     let mut config = HashMap::new();
 
     input.into_iter()
          .map(|(item, value)| {
-             // because of `Borrow<str> for &Item`, here can be `DEFAULT_HASHMAP.get(&str)`
-             (*config.entry(DEFAULT_HASHMAP.get(item).unwrap().0).or_insert_with(Vec::new))
+             (*config.entry(DEFAULT_HASHMAP.get(item).unwrap()).or_insert_with(Vec::new))
              .push((Item(item),Value(value)))
          })
          .last();
 
     config.into_iter()
-          .map(|(css, ready)| Theme::from(*css, Ready(ready), pagetoc).process())
+          .map(|(css, ready)| Theme::from(*css, Ready(ready)).process())
           .last();
 }
