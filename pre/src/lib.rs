@@ -23,9 +23,10 @@ impl Preprocessor for Nop {
                 // anyhow::bail!("Boom!!!");
                 eprintln!("Boom!!!From preprocessor...");
             }
-        }
 
-        theme::config::process();
+            dbg!(&nop_cfg);
+            theme::config::process(nop_cfg);
+        }
 
         Ok(book)
     }
