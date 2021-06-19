@@ -19,8 +19,9 @@ pub enum CssFile { Variables, General, Chrome, Index, PagetocJs, PagetocCss, Pag
 impl CssFile {
     pub fn filename(&self) -> &'static str {
         match self {
-            CssFile::Variables => "css/variables.css",
             CssFile::Custom(filename) => filename,
+            CssFile::Variables => "css/variables.css",
+            CssFile::Index => "index.hbs",
             _ => "temp.css",
         }
     }
@@ -50,6 +51,10 @@ pub struct Item(&'static str);
 /// useful when looking up in `HashMap<&Item, _>` just via `HashMap<&str, _>`
 impl Borrow<str> for Item {
     fn borrow(&self) -> &str { self.0 }
+}
+
+impl Borrow<String> for Item {
+    fn borrow(&self) -> &String { &self.0.to_string() }
 }
 
 impl Item {
@@ -112,15 +117,12 @@ impl Default for Content {
 }
 
 impl fmt::Display for Content {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
 }
 
 impl fmt::Debug for Content {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Content(...)") }
 }
-
-#[derive(Debug, Clone, Copy)]
-struct Pos(usize, usize);
 
 impl Content {
     /// TODO: add more contents
@@ -149,17 +151,17 @@ impl Content {
 
     /// hypothesis: `item: value;`
     /// better to use `regex`, but for now I'm not ready :(
-    fn find(&self, pat: &str) -> Result<Pos> {
+    fn find(&self, pat: &str) -> Result<(usize, usize)> {
         let text = self.get();
         let p1 = text.find(pat).ok_or(Error::StrNotFound)? + pat.len() + 2;
         let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
         // dbg!(&text[p1..p2]);
-        Ok(Pos(p1, p2))
+        Ok((p1, p2))
     }
 
     /// update the content
     fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
-        let Pos(p1, p2) = self.find(pat)?;
+        let (p1, p2) = self.find(pat)?;
         self.get_mut().replace_range(p1..p2, sub);
         // dbg!(&self.get()[p1 - 20..p2 + 5]);
         // println!("\n{}", &self.get()[p1 - 20..p2 + 10]);
@@ -203,8 +205,7 @@ macro_rules! default {
 
 // TODO: add more static variables, and may remove the needless `Value` and tuples
 pub static DEFAULT: &[(CssFile, Item, Value)] =
-    &[default!(Pagetoc, "pagetoc", "true"),
-      default!(Variables, "sidebar-width", "140px"),
+    &[default!(Variables, "sidebar-width", "140px"),
       default!(Variables, "page-padding", "15px"),
       default!(Variables, "content-max-width", "82%"),
       default!(Variables, "menu-bar-height", "40px"),
@@ -233,8 +234,7 @@ pub struct Theme {
 #[rustfmt::skip]
 impl Default for Theme {
     fn default() -> Self {
-        Self { cssfile: CssFile::Custom(""), content: Content::default(), 
-               ready: Ready::default(), }
+        Self { cssfile: CssFile::Custom(""), content: Content::default(), ready: Ready::default() }
     }
 }
 
@@ -254,8 +254,6 @@ impl Theme {
         Self { cssfile, ready, content: Content::default() }
     }
 
-    /// TODO: checking user's css files is not done
-    /// find pagetoc and user's css files
     pub fn process(mut self) -> Self { self.cssfile().content().write_theme_file() }
 
     fn cssfile(mut self) -> Self {
@@ -321,10 +319,9 @@ impl Theme {
         self.process()
     }
 
-    /// When `pagetoc = "true"`, a bunch of files need to change; when NOT true, do nothing.
-    fn pagetoc(self) {
+    /// When `pagetoc = "true"` , a bunch of files need to change; when NOT true, do nothing.
+    pub fn pagetoc(self) {
         if self.cssfile == CssFile::Pagetoc {
-            eprintln!("pagetoc = true");
             self.ready(CssFile::Variables);
             // .ready(CssFile::Index)
             // .ready(CssFile::General)
