@@ -24,7 +24,6 @@ impl Preprocessor for Nop {
                 eprintln!("Boom!!!From preprocessor...");
             }
 
-            dbg!(&nop_cfg);
             theme::config::process(nop_cfg);
         }
 
