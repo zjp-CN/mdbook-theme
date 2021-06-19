@@ -5,7 +5,7 @@ use toml::map::Map;
 use toml::value;
 
 /// TODO: `fn themes(user_config: HashMap<_, _>)`
-pub fn process<'a>(input: &'a Map<String, value::Value>) {
+pub fn process(input: &Map<String, value::Value>) {
     // user_config
     // let mut input = HashMap::new();
     // input.insert("sidebar-width", "200px");
@@ -24,8 +24,7 @@ pub fn process<'a>(input: &'a Map<String, value::Value>) {
         Theme::from(CssFile::Pagetoc, Ready::default()).pagetoc(); // process pagetoc defaults
     }
 
-    let default_map: HashMap<Item<'a>, CssFile> =
-        DEFAULT.iter().map(|(css, item, _)| (*item, *css)).collect();
+    let default_map: HashMap<_, _> = DEFAULT.iter().map(|(css, item, _)| (*item, *css)).collect();
     let mut config = HashMap::new(); // ultimate theme configs
 
     dbg!(&input);

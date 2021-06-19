@@ -1,6 +1,5 @@
 use mdbook::theme::*;
 use std::borrow::Borrow;
-use std::collections::HashMap;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
@@ -27,9 +26,9 @@ macro_rules! default {
 // TODO: add more
 #[rustfmt::skip]
 pub static CSSFILES: &[(CssFile, &'static str)] = 
-  &[default!(Variables, "css/variables.css"),
-    default!(Index,     "index.hbs"),
-    default!(Invalid,   "")];
+    &[default!(Variables, "css/variables.css"),
+      default!(Index,     "index.hbs"),
+      default!(Invalid,   "")];
 
 impl CssFile {
     pub fn filename(&self) -> &'static str {
@@ -104,8 +103,6 @@ impl<'a, 'b> Ready<'a, 'b> {
     fn from(css: CssFile) -> Self {
         DEFAULT.iter().filter(|(c, _, _)| *c == css).map(|(_, i, v)| (*i, *v)).collect()
     }
-
-    // fn add(&mut self, elem: (Item, Value)) { self.0.push(elem); }
 
     pub fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
 }
@@ -192,8 +189,8 @@ impl Content {
 }}\n\n", sub);
             self.insert(&content, "}", "/* Themes */");
         } else if self.replace(pat, sub).is_err() {
-                self.insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n").unwrap();
-            }
+            self.insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n").unwrap();
+        }
     }
 }
 
