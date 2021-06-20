@@ -1,15 +1,22 @@
 use crate::error::{Error, Result};
+use lazy_static::lazy_static;
+use regex::Regex;
 use statics::*;
 use std::borrow::Borrow;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 pub mod config;
 pub mod statics;
 
 /// All cssfiles to be modified.
+/// There are several aspects of configs:
+/// 1. pagetoc related
+/// 2. fontsize related
+/// 3. color related
+/// but in practice all configs are processed in unit of single file.
 #[rustfmt::skip]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CssFile { 
@@ -56,8 +63,12 @@ impl<'b> Value<'b> {
 }
 
 /// configs ready to go
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Ready<'a, 'b>(Vec<(Item<'a>, Value<'b>)>);
+
+impl<'a, 'b> fmt::Debug for Ready<'a, 'b> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0.len()) }
+}
 
 impl<'a, 'b> Default for Ready<'a, 'b> {
     fn default() -> Self { Self(vec![]) }
@@ -81,6 +92,8 @@ impl<'a, 'b> Ready<'a, 'b> {
     pub fn get_defualt(css: CssFile) -> Self {
         match css {
             c @ CssFile::Variables => Ready::from(c),
+            c @ CssFile::General => Ready::from(c),
+            c @ CssFile::Chrome => Ready::from(c),
             _ => Self::default(),
         }
     }
@@ -110,7 +123,7 @@ impl fmt::Debug for Content {
 
 impl Content {
     /// TODO: add more contents
-    pub fn from(cssfile: CssFile, dir: &PathBuf) -> Self {
+    pub fn from(cssfile: CssFile, dir: &Path) -> Self {
         use mdbook::theme::*;
         match cssfile {
             CssFile::Custom(filename) => Content::from_file(dir, filename),
@@ -128,7 +141,7 @@ impl Content {
         Content(String::from(unsafe { std::str::from_utf8_unchecked(v) }))
     }
 
-    fn from_file(dir: &PathBuf, filename: &str) -> Self {
+    fn from_file(dir: &Path, filename: &str) -> Self {
         use std::fs::File;
         use std::io::Read;
         let mut s = String::new();
@@ -144,19 +157,32 @@ impl Content {
 
     /// hypothesis: `item: value;`
     /// better to use `regex`, but for now I'm not ready :(
-    fn find(&self, pat: &str) -> Result<(usize, usize)> {
+    fn find(&self, item: &str) -> Result<(usize, usize)> {
         let text = self.get();
-        let p1 = text.find(pat).ok_or(Error::StrNotFound)? + pat.len() + 2;
+        let p1 = text.find(item).ok_or(Error::StrNotFound)? + item.len() + 2;
         let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
         // dbg!(&text[p1..p2]);
         Ok((p1, p2))
     }
 
     /// update the content
-    fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
-        let (p1, p2) = self.find(pat)?;
-        self.get_mut().replace_range(p1..p2, sub);
+    fn replace(&mut self, item: &str, value: &str) -> Result<()> {
+        let (p1, p2) = self.find(item)?;
+        self.get_mut().replace_range(p1..p2, value);
         // eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
+        Ok(())
+    }
+
+    /// update the content with information of context:
+    /// it's common to see homonymous args items in different context,
+    /// so this function takes an additional foregoing hint (need two locations).
+    fn fore_replace(&mut self, fore: &str, item: &str, value: &str) -> Result<()> {
+        let text = self.get();
+        let pfore = text.find(fore).ok_or(Error::StrNotFound)?;
+        let p1 = text[pfore..].find(item).ok_or(Error::StrNotFound)? + pfore + item.len() + 2;
+        let p2 = p1 + text[p1..].find(";").ok_or(Error::StrNotFound)?;
+        self.get_mut().replace_range(p1..p2, value);
+        eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
         Ok(())
     }
 
@@ -172,23 +198,24 @@ impl Content {
         Ok(())
     }
 
+    /// content processing in `variables.css`
     #[rustfmt::skip]
-    fn variables(&mut self, pat: &str, sub: &str) {
-        if pat == "mobile-content-max-width" {
+    fn variables(&mut self, item: &str, value: &str) {
+        if item == "mobile-content-max-width" {
             let content = format!(
 "\n@media only screen and (max-width:1439px) {{
  :root{{
     --content-max-width: {};
   }}
-}}\n\n", sub);
+}}\n\n", value);
             self.insert(&content, "}", "/* Themes */");
-        } else if self.replace(pat, sub).is_err() {
-            self.insert(&format!("\n    --{}: {};\n", pat, sub), ":root", "}\n").unwrap();
+        } else if self.replace(item, value).is_err() {
+            self.insert(&format!("\n    --{}: {};\n", item, value), ":root", "}\n").unwrap();
         }
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Theme<'a, 'b> {
     pub cssfile: CssFile,
     pub content: Content, // ultimate str to be processed
@@ -201,17 +228,6 @@ impl<'a, 'b> Default for Theme<'a, 'b> {
     fn default() -> Self {
         Self { cssfile: CssFile::Custom(""), content: Content::default(), 
                ready: Ready::default(), dir: PathBuf::new() }
-    }
-}
-
-impl<'a, 'b> fmt::Debug for Theme<'a, 'b> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("Theme")
-         .field("cssfile", &self.cssfile)
-         .field("content", &self.content)
-         .field("ready", &self.ready.0.len())
-         .field("path", &self.dir)
-         .finish()
     }
 }
 
@@ -228,7 +244,6 @@ impl<'a, 'b> Theme<'a, 'b> {
     /// Give a default or custom virtual css file marked to help content processing.
     fn cssfile(mut self) -> Self {
         let filename = self.cssfile.filename();
-        // TODO: make path a field in `Theme`
         if self.dir.join(filename).exists() {
             self.cssfile = CssFile::Custom(filename);
         }
@@ -245,12 +260,12 @@ impl<'a, 'b> Theme<'a, 'b> {
 
     /// process contents of different files
     fn content_process(&mut self, filename: Option<&str>) {
-        let cssfile = filename.map_or_else(|| self.cssfile, |f| CssFile::variant(f));
-        match cssfile {
-            CssFile::Variables => self.process_variables(),
-            CssFile::Index => self.process_index(),
-            // TODO: add more branches
+        match filename.map_or_else(|| self.cssfile, |f| CssFile::variant(f)) {
             CssFile::Custom(f) => self.content_process(Some(f)),
+            CssFile::Variables => self.process_variables(),
+            CssFile::General => self.process_general(),
+            CssFile::Chrome => self.process_chrome(),
+            CssFile::Index => self.process_index(),
             _ => (), // skip content processing, and will write default to the file
         }
     }
@@ -277,10 +292,19 @@ impl<'a, 'b> Theme<'a, 'b> {
             .ready(CssFile::Index)
             .ready(CssFile::PagetocJs)
             .ready(CssFile::PagetocCss)
-        // .ready(CssFile::General)
-        // .ready(CssFile::Chrome)
+            .ready(CssFile::General)
+            .ready(CssFile::Chrome)
     }
 
+    /// create the dirs on demand
+    pub(self) fn create_theme_dirs(dir: &str) -> Result<()> {
+        std::fs::create_dir_all(PathBuf::from(dir).join("css")).map_err(|_| Error::DirNotCreated)?;
+        Ok(())
+    }
+}
+
+/// content processing
+impl<'a, 'b> Theme<'a, 'b> {
     /// update content in `variables.css`
     fn process_variables(&mut self) {
         for (item, value) in self.ready.item_value() {
@@ -298,9 +322,12 @@ impl<'a, 'b> Theme<'a, 'b> {
         self.content.insert(&insert, "<main>", "{{{ content }}}");
     }
 
-    /// create the dirs on demand
-    pub(self) fn create_theme_dirs(dir: &str) -> Result<()> {
-        std::fs::create_dir_all(PathBuf::from(dir).join("css")).map_err(|_| Error::DirNotCreated)?;
-        Ok(())
+    fn process_general(&mut self) {
+        // TODO
+    }
+
+    fn process_chrome(&mut self) {
+        // TODO
+        self.content.fore_replace(".sidebar", "font-size", "1em");
     }
 }

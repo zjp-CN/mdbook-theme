@@ -19,6 +19,7 @@ serde_derive = "*"
 serde_repr = "*"
 
 lazy_static = "1.4.0"
+regex = "1.5.4"
 
 [[bin]]
 name = "mdbook-theme-pre"
