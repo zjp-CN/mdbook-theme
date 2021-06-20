@@ -18,17 +18,19 @@ impl Preprocessor for Nop {
     fn name(&self) -> &str { "theme-pre" }
 
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> Result<Book, Error> {
-        if let Some(nop_cfg) = ctx.config.get_preprocessor(self.name()) {
-            if nop_cfg.contains_key("blow-up") {
-                // anyhow::bail!("Boom!!!");
-                eprintln!("Boom!!!From preprocessor...");
-            }
+        // if let Some(input) = ctx.config.get_preprocessor(self.name()) {
+        //     if input.contains_key("blow-up") {
+        //         // anyhow::bail!("Boom!!!");
+        //         eprintln!("Boom!!!From preprocessor...");
+        //     }
+        //
+        //     theme::config::process(input);
+        // }
 
-            theme::config::process(nop_cfg);
-        }
+        ctx.config.get_preprocessor(self.name()).map(theme::config::process);
 
         Ok(book)
     }
 
-    // fn supports_renderer(&self, renderer: &str) -> bool { renderer != "not-supported" }
+    fn supports_renderer(&self, renderer: &str) -> bool { renderer == "html" }
 }

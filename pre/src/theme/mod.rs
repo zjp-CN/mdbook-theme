@@ -1,49 +1,35 @@
-use mdbook::theme::*;
+use crate::error::{Error, Result};
+use statics::*;
 use std::borrow::Borrow;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
 use std::path::PathBuf;
 
-use crate::error::{Error, Result};
-
 pub mod config;
+pub mod statics;
 
 /// All cssfiles to be modified.
 #[rustfmt::skip]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum CssFile { 
-    Variables, General, Chrome, Index, PagetocJs, Invalid,
-    PagetocCss, Pagetoc, Custom(&'static str) 
+    Variables, General, Chrome, Index, PagetocJs, PagetocCss,
+    Invalid, Pagetoc, Custom(&'static str) 
 }
-
-#[rustfmt::skip]
-macro_rules! default {
-    ($idt:ident, $e1:expr) => { (CssFile::$idt, $e1) };
-    ($idt:ident, $e1:expr, $e2:expr) => { (CssFile::$idt, Item($e1), Value($e2)) };
-}
-
-// TODO: add more
-#[rustfmt::skip]
-pub static CSSFILES: &[(CssFile, &'static str)] = 
-    &[default!(Variables, "css/variables.css"),
-      default!(Index,     "index.hbs"),
-      default!(Invalid,   "")];
 
 impl CssFile {
+    /// get filename according to `CssFile` type
     pub fn filename(&self) -> &'static str {
-        match self {
-            CssFile::Custom(filename) => filename,
-            _ => {
-                let index = CSSFILES.binary_search_by_key(self, |&(a, b)| a).unwrap();
-                dbg!(CSSFILES[index].1)
-            }
+        if let CssFile::Custom(filename) = self {
+            filename
+        } else {
+            CSSFILES.iter().find(|&(css, _)| *css == *self).unwrap().1
         }
     }
 
+    /// get `CssFile` variant according to filename
     pub fn variant(filename: &str) -> Self {
-        let index = CSSFILES.binary_search_by_key(&filename, |&(a, b)| b).unwrap();
-        CSSFILES[index].0
+        CSSFILES.iter().find(|&(_, f)| &filename == f).unwrap().0
     }
 }
 
@@ -125,12 +111,21 @@ impl fmt::Debug for Content {
 impl Content {
     /// TODO: add more contents
     pub fn from(cssfile: CssFile) -> Self {
-        use std::str;
+        use mdbook::theme::*;
         match cssfile {
-            CssFile::Variables => Content(String::from(str::from_utf8(VARIABLES_CSS).unwrap())),
             CssFile::Custom(filename) => Content::from_file(filename),
+            CssFile::Variables => Content::from_static(VARIABLES_CSS),
+            CssFile::Index => Content::from_static(INDEX),
+            CssFile::PagetocJs => Content::from_static(PAGETOCJS),
+            CssFile::PagetocCss => Content::from_static(PAGETOCCSS),
+            CssFile::Chrome => Content::from_static(CHROME_CSS),
+            CssFile::General => Content::from_static(GENERAL_CSS),
             _ => Content::default(),
         }
+    }
+
+    fn from_static(v: &[u8]) -> Self {
+        Content(String::from(unsafe { std::str::from_utf8_unchecked(v) }))
     }
 
     fn from_file(filename: &str) -> Self {
@@ -194,21 +189,6 @@ impl Content {
     }
 }
 
-// TODO: add more static variables, and may remove the needless `Value` and tuples
-pub static DEFAULT: &[(CssFile, Item, Value)] =
-    &[default!(Variables, "sidebar-width", "140px"),
-      default!(Variables, "page-padding", "15px"),
-      default!(Variables, "content-max-width", "82%"),
-      default!(Variables, "menu-bar-height", "40px"),
-      default!(Variables, "pagetoc-width", "13%"),
-      default!(Variables, "pagetoc-fontsize", "14.5px"),
-      default!(Variables, "mobile-content-max-width", "98%")];
-
-static INDEX_PAGETOC: &str = r#"
-<!-- Page table of contents -->\
-<div class="sidetoc"><nav class="pagetoc"></nav></div>
-"#;
-
 #[derive(Clone)]
 pub struct Theme<'a, 'b> {
     pub cssfile: CssFile,
@@ -263,9 +243,9 @@ impl<'a, 'b> Theme<'a, 'b> {
     /// process contents of different files
     fn content_process(&mut self, filename: Option<&str>) {
         let cssfile = filename.map_or_else(|| self.cssfile.clone(), |f| CssFile::variant(f));
-        dbg!(&cssfile);
         match cssfile {
             CssFile::Variables => self.process_variables(),
+            CssFile::Index => self.process_index(),
             // TODO: add more branches
             CssFile::Custom(f) => self.content_process(Some(f)),
             _ => (),
@@ -289,13 +269,14 @@ impl<'a, 'b> Theme<'a, 'b> {
     }
 
     /// When `pagetoc = true` , a bunch of files need to change; when NOT true, do nothing.
-    pub fn pagetoc(self) {
-        if self.cssfile == CssFile::Pagetoc {
-            self.ready(CssFile::Variables);
-            // .ready(CssFile::Index)
-            // .ready(CssFile::General)
-            // .ready(CssFile::Chrome)
-        }
+    pub fn pagetoc(self) -> Self {
+        // TODO: remove returned `Self`
+        self.ready(CssFile::Variables)
+            .ready(CssFile::Index)
+            .ready(CssFile::PagetocJs)
+            .ready(CssFile::PagetocCss)
+        // .ready(CssFile::General)
+        // .ready(CssFile::Chrome)
     }
 
     /// update content in `variables.css`
@@ -303,6 +284,14 @@ impl<'a, 'b> Theme<'a, 'b> {
         for (item, value) in self.ready.item_value() {
             self.content.variables(item.get(), value.get());
         }
+    }
+
+    fn process_index(&mut self) {
+        let space = "                        ";
+        let insert1 = "<!-- Page table of contents -->";
+        let insert2 = r#"<div class="sidetoc"><nav class="pagetoc"></nav></div>"#;
+        let insert = format!(" {1}\n{0}{2}\n\n{0}", space, insert1, insert2);
+        let res = self.content.insert(&insert, "<main>", "{{{ content }}}");
     }
 
     /// create the dirs on demand
