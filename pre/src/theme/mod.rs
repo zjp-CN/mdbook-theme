@@ -110,10 +110,10 @@ impl fmt::Debug for Content {
 
 impl Content {
     /// TODO: add more contents
-    pub fn from(cssfile: CssFile) -> Self {
+    pub fn from(cssfile: CssFile, dir: &PathBuf) -> Self {
         use mdbook::theme::*;
         match cssfile {
-            CssFile::Custom(filename) => Content::from_file(filename),
+            CssFile::Custom(filename) => Content::from_file(dir, filename),
             CssFile::Variables => Content::from_static(VARIABLES_CSS),
             CssFile::Index => Content::from_static(INDEX),
             CssFile::PagetocJs => Content::from_static(PAGETOCJS),
@@ -128,12 +128,11 @@ impl Content {
         Content(String::from(unsafe { std::str::from_utf8_unchecked(v) }))
     }
 
-    fn from_file(filename: &str) -> Self {
+    fn from_file(dir: &PathBuf, filename: &str) -> Self {
+        use std::fs::File;
         use std::io::Read;
         let mut s = String::new();
-        let path = format!("theme/{}", filename);
-        dbg!(&path);
-        std::fs::File::open(path).unwrap().read_to_string(&mut s).unwrap();
+        File::open(dir.join(filename)).unwrap().read_to_string(&mut s).unwrap();
         Content(s)
     }
 
@@ -157,7 +156,7 @@ impl Content {
     fn replace(&mut self, pat: &str, sub: &str) -> Result<()> {
         let (p1, p2) = self.find(pat)?;
         self.get_mut().replace_range(p1..p2, sub);
-        eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
+        // eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
         Ok(())
     }
 
@@ -193,14 +192,15 @@ impl Content {
 pub struct Theme<'a, 'b> {
     pub cssfile: CssFile,
     pub content: Content, // ultimate str to be processed
-    pub ready:   Ready<'a, 'b>, /* need a func to cover the default values according to user's
-                           * config */
+    pub ready:   Ready<'a, 'b>,
+    pub dir:     PathBuf,
 }
 
 #[rustfmt::skip]
 impl<'a, 'b> Default for Theme<'a, 'b> {
     fn default() -> Self {
-        Self { cssfile: CssFile::Custom(""), content: Content::default(), ready: Ready::default() }
+        Self { cssfile: CssFile::Custom(""), content: Content::default(), 
+               ready: Ready::default(), dir: PathBuf::new() }
     }
 }
 
@@ -210,54 +210,56 @@ impl<'a, 'b> fmt::Debug for Theme<'a, 'b> {
          .field("cssfile", &self.cssfile)
          .field("content", &self.content)
          .field("ready", &self.ready.0.len())
+         .field("path", &self.dir)
          .finish()
     }
 }
 
 impl<'a, 'b> Theme<'a, 'b> {
     #[rustfmt::skip]
-    pub fn from(cssfile: CssFile, ready: Ready<'a, 'b>) -> Self {
-        Self { cssfile, ready, content: Content::default() }
+    pub fn from(cssfile: CssFile, ready: Ready<'a, 'b>, dir:&str) -> Self {
+        Self { cssfile, ready, content: Content::default(), dir: PathBuf::from(dir) }
     }
 
+    /// TODO: Avoid rewriting when configs are not changed,
+    /// or else `mdbook watch` will repeat rewriting.
     pub fn process(mut self) -> Self { self.cssfile().content().write_theme_file() }
 
     /// Give a default or custom virtual css file marked to help content processing.
     fn cssfile(mut self) -> Self {
         let filename = self.cssfile.filename();
         // TODO: make path a field in `Theme`
-        if std::path::Path::new("theme").join(filename).exists() {
+        if self.dir.join(filename).exists() {
             self.cssfile = CssFile::Custom(filename);
         }
         self
     }
 
-    /// The **final** content to be written into `theme` dir.
+    /// The **ultimate** content to be written into `theme` dir.
     /// An empty content means not having processed the content.
     fn content(mut self) -> Self {
-        self.content = Content::from(self.cssfile);
+        self.content = Content::from(self.cssfile, &self.dir);
         self.content_process(None);
         self
     }
 
     /// process contents of different files
     fn content_process(&mut self, filename: Option<&str>) {
-        let cssfile = filename.map_or_else(|| self.cssfile.clone(), |f| CssFile::variant(f));
+        let cssfile = filename.map_or_else(|| self.cssfile, |f| CssFile::variant(f));
         match cssfile {
             CssFile::Variables => self.process_variables(),
             CssFile::Index => self.process_index(),
             // TODO: add more branches
             CssFile::Custom(f) => self.content_process(Some(f)),
-            _ => (),
+            _ => (), // skip content processing, and will write default to the file
         }
     }
 
     /// create a css file on demand
     fn write_theme_file(self) -> Self {
         use std::fs::write;
-        write(std::path::Path::new("theme").join(self.cssfile.filename()),
-              self.content.get().as_bytes()).unwrap();
         dbg!(&self);
+        write(self.dir.join(self.cssfile.filename()), self.content.get().as_bytes()).unwrap();
         self
     }
 
@@ -268,7 +270,7 @@ impl<'a, 'b> Theme<'a, 'b> {
         self.process()
     }
 
-    /// When `pagetoc = true` , a bunch of files need to change; when NOT true, do nothing.
+    /// When `pagetoc = true` , a bunch of files need to change; if NOT true, don't call this.
     pub fn pagetoc(self) -> Self {
         // TODO: remove returned `Self`
         self.ready(CssFile::Variables)
@@ -286,17 +288,19 @@ impl<'a, 'b> Theme<'a, 'b> {
         }
     }
 
+    /// update content in `index.hbs`, if and only if `pagetoc = true`
     fn process_index(&mut self) {
+        // TODO: just one str, rather than multiple `let` binding
         let space = "                        ";
         let insert1 = "<!-- Page table of contents -->";
         let insert2 = r#"<div class="sidetoc"><nav class="pagetoc"></nav></div>"#;
         let insert = format!(" {1}\n{0}{2}\n\n{0}", space, insert1, insert2);
-        let res = self.content.insert(&insert, "<main>", "{{{ content }}}");
+        self.content.insert(&insert, "<main>", "{{{ content }}}");
     }
 
     /// create the dirs on demand
-    pub(self) fn create_theme_dirs() -> Result<()> {
-        std::fs::create_dir_all("theme/css").map_err(|_| Error::DirNotCreated)?;
+    pub(self) fn create_theme_dirs(dir: &str) -> Result<()> {
+        std::fs::create_dir_all(PathBuf::from(dir).join("css")).map_err(|_| Error::DirNotCreated)?;
         Ok(())
     }
 }

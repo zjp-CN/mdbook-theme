@@ -27,7 +27,8 @@ impl Preprocessor for Nop {
         //     theme::config::process(input);
         // }
 
-        ctx.config.get_preprocessor(self.name()).map(theme::config::process);
+        let dir = ctx.config.get("output.html.theme").map_or("theme", |s| s.as_str().unwrap());
+        ctx.config.get_preprocessor(self.name()).map(|t| theme::config::process(t, dir));
 
         Ok(book)
     }
