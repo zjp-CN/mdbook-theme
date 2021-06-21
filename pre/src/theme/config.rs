@@ -1,4 +1,4 @@
-use super::{statics::DEFAULT, CssFile, CssFile::Invalid, Item, Ready, Theme, Value};
+use super::{default::DEFAULT, CssFile, CssFile::Invalid, Item, Ready, Theme, Value};
 use crate::error::{Error, Result};
 use std::collections::HashMap;
 use toml::{map::Map, value::Value as MdValue};
