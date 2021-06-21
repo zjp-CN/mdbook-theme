@@ -1,7 +1,5 @@
 use crate::error::{Error, Result};
 use default::*;
-use lazy_static::lazy_static;
-use regex::Regex;
 use std::borrow::Borrow;
 use std::borrow::Cow;
 use std::fmt;
@@ -331,14 +329,13 @@ impl<'a> Theme<'a> {
     }
 
     /// When `pagetoc = true` , a bunch of files need to change; if NOT true, don't call this.
-    pub fn pagetoc(self) -> Self {
-        // TODO: remove returned `Self`
+    pub fn pagetoc(self) {
         self.ready(CssFile::Variables)
             .ready(CssFile::Index)
             .ready(CssFile::PagetocJs)
             .ready(CssFile::PagetocCss)
             .ready(CssFile::General)
-            .ready(CssFile::Chrome)
+            .ready(CssFile::Chrome);
     }
 
     /// create the dirs on demand
@@ -358,6 +355,7 @@ impl<'a> Theme<'a> {
     }
 
     /// update content in `index.hbs`, if and only if `pagetoc = true` for now
+    #[rustfmt::skip]
     fn process_index(&mut self) {
         // TODO: just one str, rather than multiple `let` binding
         let space = "                        ";

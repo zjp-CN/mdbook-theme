@@ -17,7 +17,7 @@ pub static CSSFILES: &[(CssFile, &str)] =
 
 #[rustfmt::skip]
 pub static DEFAULT: &[(CssFile, Item, Value)] =
-    &[/*                   pagetoc related                         */
+    &[/*                   pagetoc related                      */
       default!(Variables, "sidebar-width",             "140px"),
       default!(Variables, "page-padding",              "15px"),
       default!(Variables, "content-max-width",         "82%"),
@@ -32,12 +32,12 @@ pub static DEFAULT: &[(CssFile, Item, Value)] =
       default!(Chrome,    "nav-chapters-min-width",    "auto"),
       default!(Chrome,    "chapter-line-height",       "2em"),
       default!(Chrome,    "section-line-height",       "1.5em"),
-      /*                   font-size related                        */
+      /*                   font-size related                    */
       default!(General,   "root-font-size",            "70%"),
       default!(General,   "body-font-size",            "1.5rem"),
       default!(General,   "code-font-size",            "0.9em"),
       default!(Chrome,    "sidebar-font-size",         "1em"),
-      /*                   color related                            */
+      /*                   color related                        */
       default!(Variables, "light-links",               "#1f1fff"),
       default!(Variables, "light-inline-code-color",   "#F42C4C"),
       default!(Variables, "rust-links",                "#2b79a2"),

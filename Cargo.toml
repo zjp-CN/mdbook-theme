@@ -11,20 +11,20 @@ description = "A preprocessor and a backend to config theme for mdbook, especial
 exclude = ["example"]
 
 [dependencies]
-#clap = "*"
-mdbook = "*"
-#strum_macros = "0.21.1"
+clap = "2.33.3"
+mdbook = "0.4.10"
 lazy_static = "1.4.0"
-#semver = "*"
+semver = "1.0.3"
+toml = "0.5.8"
+serde_json = "1.0.64"
+#strum_macros = "0.21.1"
 #serde_json = "*"
 #anyhow = "*"
-#
 #serde = "*"
 #serde_derive = "*"
 # serde_repr = "*"
-
 # regex = "*"
 
 
 [workspace]
-members = ["pre", "ace", "examples/demo"]
+members = ["ace", "examples/demo"]

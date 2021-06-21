@@ -2,17 +2,17 @@
 /* Globals */
 
 :root {
-    --sidebar-width: 200px;
+    --sidebar-width: 140px;
     --page-padding: 15px;
     --content-max-width: 82%;
     --menu-bar-height: 40px;
+    --pagetoc-width: 13%;
     --pagetoc-fontsize: 14.5px;
-    --pagetoc-width: 15%;
 }
 
 @media only screen and (max-width:1439px) {
  :root{
-    --content-max-width: 99%;
+    --content-max-width: 98%;
   }
 }
 
@@ -75,7 +75,7 @@
 
     --links: #2b79a2;
 
-    --inline-code-color: #c5c8c6;;
+    --inline-code-color: #ffb454;;
 
     --theme-popup-bg: #141617;
     --theme-popup-border: #43484d;
@@ -113,9 +113,9 @@
     --icons: #747474;
     --icons-hover: #000000;
 
-    --links: #20609f;
+    --links: #1f1fff;
 
-    --inline-code-color: #301900;
+    --inline-code-color: #F42C4C;
 
     --theme-popup-bg: #fafafa;
     --theme-popup-border: #cccccc;
@@ -155,7 +155,7 @@
 
     --links: #2b79a2;
 
-    --inline-code-color: #c5c8c6;;
+    --inline-code-color: #ffb454;;
 
     --theme-popup-bg: #161923;
     --theme-popup-border: #737480;
@@ -193,9 +193,9 @@
     --icons: #737480;
     --icons-hover: #262625;
 
-    --links: #2b79a2;
+    --links: #1f1fff;
 
-    --inline-code-color: #6e6b5e;
+    --inline-code-color: #F42C4C;
 
     --theme-popup-bg: #e1e1db;
     --theme-popup-border: #b38f6b;

@@ -823,23 +823,12 @@ dependencies = [
 name = "mdbook-theme"
 version = "0.1.0"
 dependencies = [
- "lazy_static",
- "mdbook",
-]
-
-[[package]]
-name = "mdbook-theme-pre"
-version = "0.1.0"
-dependencies = [
- "anyhow",
  "clap",
  "lazy_static",
  "mdbook",
  "semver",
- "serde",
- "serde_derive",
  "serde_json",
- "serde_repr",
+ "toml",
 ]
 
 [[package]]
