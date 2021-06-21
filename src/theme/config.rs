@@ -14,8 +14,6 @@ pub fn process(input: &Map<String, MdValue>, dir: &str) {
     let default_map: HashMap<_, _> = DEFAULT.iter().map(|(css, item, _)| (*item, *css)).collect();
     let mut config = HashMap::new(); // ultimate theme configs
 
-    // dbg!(&input);
-
     input.iter()
          .map(|(item, value)| {
              let item = item.as_str();
