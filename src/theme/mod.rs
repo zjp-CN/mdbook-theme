@@ -316,8 +316,8 @@ impl<'a> Theme<'a> {
     /// create a css file on demand
     fn write_theme_file(self) -> Self {
         use std::fs::write;
-        dbg!(&self);
         write(self.dir.join(self.cssfile.filename()), self.content.get().as_bytes()).unwrap();
+        dbg!(&self);
         self
     }
 
@@ -329,7 +329,7 @@ impl<'a> Theme<'a> {
     }
 
     /// When `pagetoc = true` , a bunch of files need to change; if NOT true, don't call this.
-    pub fn pagetoc(self) {
+    fn pagetoc(self) {
         self.ready(CssFile::Variables)
             .ready(CssFile::Index)
             .ready(CssFile::PagetocJs)
@@ -355,14 +355,12 @@ impl<'a> Theme<'a> {
     }
 
     /// update content in `index.hbs`, if and only if `pagetoc = true` for now
-    #[rustfmt::skip]
     fn process_index(&mut self) {
-        // TODO: just one str, rather than multiple `let` binding
-        let space = "                        ";
-        let insert1 = "<!-- Page table of contents -->";
-        let insert2 = r#"<div class="sidetoc"><nav class="pagetoc"></nav></div>"#;
-        let insert = format!(" {1}\n{0}{2}\n\n{0}", space, insert1, insert2);
-        self.content.insert(&insert, "<main>", "{{{ content }}}");
+        let insert = r#" <!-- Page table of contents -->
+                        <div class="sidetoc"><nav class="pagetoc"></nav></div>
+
+                        "#;
+        self.content.insert(insert, "<main>", "{{{ content }}}");
     }
 
     /// update content in `css/general.css`
