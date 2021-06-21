@@ -1,15 +1,16 @@
 use crate::error::{Error, Result};
+use default::*;
 use lazy_static::lazy_static;
 use regex::Regex;
-use statics::*;
 use std::borrow::Borrow;
+use std::borrow::Cow;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
 use std::path::{Path, PathBuf};
 
 pub mod config;
-pub mod statics;
+pub mod default;
 
 /// All cssfiles to be modified.
 /// There are several aspects of configs:
@@ -42,7 +43,7 @@ impl CssFile {
 
 /// 1. supported items (config args)
 /// 2. item of `preprocessor.theme-pre` table in book.toml
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Item<'a>(&'a str);
 
 /// useful when looking up in `HashMap<&Item, _>` just via `HashMap<&str, _>`
@@ -54,29 +55,43 @@ impl<'a> Item<'a> {
     pub fn get(&self) -> &str { self.0 }
 }
 
-/// by default or specified by a user
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Value<'b>(&'b str);
+impl<'a> fmt::Debug for Item<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
+}
 
-impl<'b> Value<'b> {
+/// by default or specified by a user
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Value<'a>(&'a str);
+
+impl<'a> Value<'a> {
     pub fn get(&self) -> &str { self.0 }
+}
+
+impl<'a> fmt::Debug for Value<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
 }
 
 /// configs ready to go
 #[derive(Clone)]
-pub struct Ready<'a, 'b>(Vec<(Item<'a>, Value<'b>)>);
+pub struct Ready<'a>(Vec<(Item<'a>, Value<'a>)>);
 
-impl<'a, 'b> fmt::Debug for Ready<'a, 'b> {
+impl<'a> fmt::Display for Ready<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_list().entries(self.0.iter()).finish()
+    }
+}
+
+impl<'a> fmt::Debug for Ready<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0.len()) }
 }
 
-impl<'a, 'b> Default for Ready<'a, 'b> {
+impl<'a> Default for Ready<'a> {
     fn default() -> Self { Self(vec![]) }
 }
 
 /// get `Ready` by using `iter.collect()`
-impl<'a, 'b> FromIterator<(Item<'a>, Value<'b>)> for Ready<'a, 'b> {
-    fn from_iter<I: IntoIterator<Item = (Item<'a>, Value<'b>)>>(iter: I) -> Self {
+impl<'a> FromIterator<(Item<'a>, Value<'a>)> for Ready<'a> {
+    fn from_iter<I: IntoIterator<Item = (Item<'a>, Value<'a>)>>(iter: I) -> Self {
         let mut r = Self::default();
         for i in iter {
             r.0.push(i);
@@ -86,15 +101,18 @@ impl<'a, 'b> FromIterator<(Item<'a>, Value<'b>)> for Ready<'a, 'b> {
 }
 
 /// yield default config or merge configs
-impl<'a, 'b> Ready<'a, 'b> {
-    /// TODO: add more default config
-    /// to get a default config from a specific cssfile
+impl<'a> Ready<'a> {
+    /// To get a default config from a specific cssfile, which need modifying.
+    /// See [`DEFAULT`] to check detailed configs.
+    ///
+    /// [`DEFAULT`]: ./default/static.DEFAULT.html
+    #[rustfmt::skip]
     pub fn get_defualt(css: CssFile) -> Self {
         match css {
             c @ CssFile::Variables => Ready::from(c),
-            c @ CssFile::General => Ready::from(c),
-            c @ CssFile::Chrome => Ready::from(c),
-            _ => Self::default(),
+            c @ CssFile::General   => Ready::from(c),
+            c @ CssFile::Chrome    => Ready::from(c),
+            _                      => Self::default(),
         }
     }
 
@@ -122,18 +140,19 @@ impl fmt::Debug for Content {
 }
 
 impl Content {
-    /// TODO: add more contents
+    /// All contents that are to modify or directly use.
+    #[rustfmt::skip]
     pub fn from(cssfile: CssFile, dir: &Path) -> Self {
         use mdbook::theme::*;
         match cssfile {
-            CssFile::Custom(filename) => Content::from_file(dir, filename),
-            CssFile::Variables => Content::from_static(VARIABLES_CSS),
-            CssFile::Index => Content::from_static(INDEX),
-            CssFile::PagetocJs => Content::from_static(PAGETOCJS),
+            CssFile::Custom(f)  => Content::from_file(dir, f),
+            CssFile::Variables  => Content::from_static(VARIABLES_CSS),
+            CssFile::Index      => Content::from_static(INDEX),
+            CssFile::PagetocJs  => Content::from_static(PAGETOCJS),
             CssFile::PagetocCss => Content::from_static(PAGETOCCSS),
-            CssFile::Chrome => Content::from_static(CHROME_CSS),
-            CssFile::General => Content::from_static(GENERAL_CSS),
-            _ => Content::default(),
+            CssFile::Chrome     => Content::from_static(CHROME_CSS),
+            CssFile::General    => Content::from_static(GENERAL_CSS),
+            _                   => Content::default(),
         }
     }
 
@@ -155,19 +174,15 @@ impl Content {
     /// for modifying the content
     pub fn get_mut(&mut self) -> &mut String { &mut self.0 }
 
-    /// hypothesis: `item: value;`
-    /// better to use `regex`, but for now I'm not ready :(
-    fn find(&self, item: &str) -> Result<(usize, usize)> {
+    /// Update the content: directly relapce a value.
+    /// Useful when the item is exact or replace the first one.
+    ///
+    /// Hypothesis: `item: value;` .
+    /// Better to use [`regex`](https://docs.rs/regex/*/regex/), but for now I'm not ready :(
+    fn replace(&mut self, item: &str, value: &str) -> Result<()> {
         let text = self.get();
         let p1 = text.find(item).ok_or(Error::StrNotFound)? + item.len() + 2;
         let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
-        // dbg!(&text[p1..p2]);
-        Ok((p1, p2))
-    }
-
-    /// update the content
-    fn replace(&mut self, item: &str, value: &str) -> Result<()> {
-        let (p1, p2) = self.find(item)?;
         self.get_mut().replace_range(p1..p2, value);
         // eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
         Ok(())
@@ -180,9 +195,9 @@ impl Content {
         let text = self.get();
         let pfore = text.find(fore).ok_or(Error::StrNotFound)?;
         let p1 = text[pfore..].find(item).ok_or(Error::StrNotFound)? + pfore + item.len() + 2;
-        let p2 = p1 + text[p1..].find(";").ok_or(Error::StrNotFound)?;
+        let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
         self.get_mut().replace_range(p1..p2, value);
-        eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
+        // eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
         Ok(())
     }
 
@@ -198,6 +213,7 @@ impl Content {
         Ok(())
     }
 
+    /// TODO: `content-max-width` + `pagetoc-width` = 95% is the best
     /// content processing in `variables.css`
     #[rustfmt::skip]
     fn variables(&mut self, item: &str, value: &str) {
@@ -209,31 +225,59 @@ impl Content {
   }}
 }}\n\n", value);
             self.insert(&content, "}", "/* Themes */");
+        } else if item.starts_with("light") | item.starts_with("ayu") | 
+            item.starts_with("rust") | item.starts_with("navy") | item.starts_with("coal") {
+                self.fore_arg(item, value);
         } else if self.replace(item, value).is_err() {
             self.insert(&format!("\n    --{}: {};\n", item, value), ":root", "}\n").unwrap();
         }
     }
+
+    /// deal with the config named `fore-arg: value;`
+    fn fore_arg(&mut self, item: &str, value: &str) {
+        for n in 2..item.split('-').count() + 1 {
+            for d in [true, false] {
+                for j in [" ", "-"] {
+                    let (fore, arg) = Content::fore_check(item, n, d, j);
+                    if self.fore_replace(&fore, arg, value).is_ok() {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
+    /// parse `fore-arg`:
+    /// `fore` may have multiple meaning, and it's complex:
+    /// 1. one word begins with/without `.` : `.content` | `body`
+    /// 2. one word will very likely join more words: `.content main` | `.nav-chapters`
+    fn fore_check<'a>(item: &'a str, n: usize, dot: bool, joint: &'a str) -> (String, &'a str) {
+        let v: Vec<&str> = item.splitn(n, '-').collect();
+        let d = if dot { "." } else { "" };
+        let fore = format!("\n.{} {{", v[..n - 1].join(joint));
+        (fore, v[n - 1])
+    }
 }
 
 #[derive(Debug, Clone)]
-pub struct Theme<'a, 'b> {
+pub struct Theme<'a> {
     pub cssfile: CssFile,
     pub content: Content, // ultimate str to be processed
-    pub ready:   Ready<'a, 'b>,
+    pub ready:   Ready<'a>,
     pub dir:     PathBuf,
 }
 
 #[rustfmt::skip]
-impl<'a, 'b> Default for Theme<'a, 'b> {
+impl<'a> Default for Theme<'a> {
     fn default() -> Self {
-        Self { cssfile: CssFile::Custom(""), content: Content::default(), 
-               ready: Ready::default(), dir: PathBuf::new() }
+        Self { cssfile:  CssFile::Custom(""), content:  Content::default(),
+               ready:      Ready::default(),      dir:  PathBuf::new() }
     }
 }
 
-impl<'a, 'b> Theme<'a, 'b> {
+impl<'a> Theme<'a> {
     #[rustfmt::skip]
-    pub fn from(cssfile: CssFile, ready: Ready<'a, 'b>, dir:&str) -> Self {
+    pub fn from(cssfile: CssFile, ready: Ready<'a>, dir:&str) -> Self {
         Self { cssfile, ready, content: Content::default(), dir: PathBuf::from(dir) }
     }
 
@@ -259,14 +303,15 @@ impl<'a, 'b> Theme<'a, 'b> {
     }
 
     /// process contents of different files
+    #[rustfmt::skip]
     fn content_process(&mut self, filename: Option<&str>) {
         match filename.map_or_else(|| self.cssfile, |f| CssFile::variant(f)) {
             CssFile::Custom(f) => self.content_process(Some(f)),
             CssFile::Variables => self.process_variables(),
-            CssFile::General => self.process_general(),
-            CssFile::Chrome => self.process_chrome(),
-            CssFile::Index => self.process_index(),
-            _ => (), // skip content processing, and will write default to the file
+            CssFile::General   => self.process_general(),
+            CssFile::Chrome    => self.process_chrome(),
+            CssFile::Index     => self.process_index(),
+            _ => (), // skip content processing
         }
     }
 
@@ -304,7 +349,7 @@ impl<'a, 'b> Theme<'a, 'b> {
 }
 
 /// content processing
-impl<'a, 'b> Theme<'a, 'b> {
+impl<'a> Theme<'a> {
     /// update content in `variables.css`
     fn process_variables(&mut self) {
         for (item, value) in self.ready.item_value() {
@@ -312,7 +357,7 @@ impl<'a, 'b> Theme<'a, 'b> {
         }
     }
 
-    /// update content in `index.hbs`, if and only if `pagetoc = true`
+    /// update content in `index.hbs`, if and only if `pagetoc = true` for now
     fn process_index(&mut self) {
         // TODO: just one str, rather than multiple `let` binding
         let space = "                        ";
@@ -322,12 +367,19 @@ impl<'a, 'b> Theme<'a, 'b> {
         self.content.insert(&insert, "<main>", "{{{ content }}}");
     }
 
+    /// update content in `css/general.css`
     fn process_general(&mut self) {
-        // TODO
+        for (item, value) in self.ready.item_value() {
+            self.content.fore_arg(item.get(), value.get());
+        }
     }
 
+    /// update content in `css/chrome.css`
     fn process_chrome(&mut self) {
-        // TODO
-        self.content.fore_replace(".sidebar", "font-size", "1em");
+        for (item, value) in self.ready.item_value() {
+            // let (fore, arg) = item.get().split_once("-").unwrap();
+            // self.content.fore_replace(&format!("\n.{} {{", fore), arg, value.get());
+            self.content.fore_arg(item.get(), value.get());
+        }
     }
 }
