@@ -5,5 +5,22 @@ multilingual = false
 src = "src"
 title = "pre"
 
-[preprocessor.theme-pre]
+[preprocessor.theme]
 #blow-up = true
+pagetoc = true
+#a = "a"
+#pagetoc-fontsize = "15px"
+#content-max-width = "85%"
+#pagetoc-width = "10%"
+#sidebar-width = "120px"
+#sidebar-font-size = "1.5em"
+coal-inline-code-color = "#ffb454"
+light-inline-code-color = "#F42C4C"
+navy-inline-code-color = "#ffb454"
+rust-inline-code-color = "#F42C4C"
+light-links = "#1f1fff"
+rust-links = "#1f1fff"
+
+[output.html]
+additional-css = ["theme/pagetoc.css"]
+additional-js = ["theme/pagetoc.js"]

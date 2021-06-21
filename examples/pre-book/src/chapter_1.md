@@ -1,5 +1,8 @@
 # Chapter 1
 
+inline code: `let mut rng = thread_rng();`
+
+a link: [chapter 2](./chapter_2.md)
 
 ```rust,editable
 # extern crate rand;

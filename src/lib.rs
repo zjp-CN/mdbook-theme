@@ -15,7 +15,7 @@ pub struct Nop;
 // }
 
 impl Preprocessor for Nop {
-    fn name(&self) -> &str { "theme-pre" }
+    fn name(&self) -> &str { "theme" }
 
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> Result<Book, Error> {
         // if let Some(input) = ctx.config.get_preprocessor(self.name()) {
