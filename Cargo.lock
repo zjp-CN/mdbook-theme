@@ -3,10 +3,6 @@
 version = 3
 
 [[package]]
-name = "ace"
-version = "0.1.0"
-
-[[package]]
 name = "aho-corasick"
 version = "0.7.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -181,20 +177,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ed00c67cb5d0a7d64a44f6ad2668db7e7530311dd53ea79bcd4fb022c64911c8"
 dependencies = [
  "libc",
-]
-
-[[package]]
-name = "demo"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "clap",
- "mdbook",
- "semver",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_repr",
 ]
 
 [[package]]
@@ -1364,17 +1346,6 @@ dependencies = [
  "itoa",
  "ryu",
  "serde",
-]
-
-[[package]]
-name = "serde_repr"
-version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "98d0516900518c29efa217c298fa1f4e6c6ffc85ae29fd7f4ee48f176e1a9ed5"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

@@ -22,8 +22,13 @@ pub mod theme;
 #[derive(Debug)]
 pub enum Error {
     StrNotFound,
+    FileNotFound,
     FileNotCreated,
+    FileNotWritten,
     DirNotCreated,
+    AceNotFound,
+    MdbookNotParsed,
+    DeserializedFailed,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
