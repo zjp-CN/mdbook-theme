@@ -1,12 +1,15 @@
 use super::{default::DEFAULT, CssFile, CssFile::Invalid, Item, Ready, Theme, Value};
-use crate::error::{Error, Result};
 use std::collections::HashMap;
 use toml::{map::Map, value::Value as MdValue};
 
 pub fn process(input: &Map<String, MdValue>, dir: &str) {
-    Theme::create_theme_dirs(dir); // create all dirs just once
-
     let mut input = input.to_owned();
+    if input.remove("turn-off").map_or(false, |p| p.as_bool().unwrap_or(false)) {
+        return;
+    }
+
+    Theme::create_theme_dirs(dir).unwrap_or_default(); // create all dirs just once
+
     if input.remove("pagetoc").map_or(false, |p| p.as_bool().unwrap_or(false)) {
         Theme::from(CssFile::Pagetoc, Ready::default(), dir).pagetoc(); // pagetoc defaults
     }

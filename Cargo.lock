@@ -827,6 +827,8 @@ dependencies = [
  "lazy_static",
  "mdbook",
  "semver",
+ "serde",
+ "serde_derive",
  "serde_json",
  "toml",
 ]

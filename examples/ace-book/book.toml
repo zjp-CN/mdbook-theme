@@ -1,0 +1,15 @@
+[book]
+authors = ["zjp"]
+language = "en"
+multilingual = false
+src = "src"
+title = "ace"
+
+[output.html]
+[output.html.playground]
+editable = true
+
+[output.theme-ace]
+theme-white = "github"
+theme-dark = "tomorrow_night"
+below-build-dir = true # this is the default to make output files in `html` right below `build_dir` in stead of `build_dir/html`

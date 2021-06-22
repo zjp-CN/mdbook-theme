@@ -1,7 +1,7 @@
 use clap::{App, Arg, ArgMatches, SubCommand};
 use mdbook::errors::Error;
 use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
-use mdbook_theme::Nop;
+use mdbook_theme::PreTheme;
 use semver::{Version, VersionReq};
 use std::io;
 use std::process;
@@ -36,12 +36,12 @@ fn handle_preprocessing() -> Result<(), Error> {
     if !version_req.matches(&book_version) {
         eprintln!("Warning: The {} plugin was built against version {} of mdbook, but we're \
                    being called from version {}",
-                  Nop.name(),
+                  PreTheme.name(),
                   mdbook::MDBOOK_VERSION,
                   ctx.mdbook_version);
     }
 
-    let processed_book = Nop.run(&ctx, book)?;
+    let processed_book = PreTheme.run(&ctx, book)?;
     serde_json::to_writer(io::stdout(), &processed_book)?;
 
     Ok(())
@@ -49,7 +49,7 @@ fn handle_preprocessing() -> Result<(), Error> {
 
 fn handle_supports(sub_args: &ArgMatches) -> ! {
     let renderer = sub_args.value_of("renderer").expect("Required argument");
-    let supported = Nop.supports_renderer(renderer);
+    let supported = PreTheme.supports_renderer(renderer);
 
     // Signal whether the renderer is supported by exiting with 1 or 0.
     if supported {

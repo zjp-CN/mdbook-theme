@@ -1,7 +1,6 @@
-use crate::error::{Error, Result};
+use crate::{Error, Result};
 use default::*;
 use std::borrow::Borrow;
-use std::borrow::Cow;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
@@ -18,9 +17,9 @@ pub mod default;
 /// but in practice all configs are processed in unit of single file.
 #[rustfmt::skip]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
-pub enum CssFile { 
+pub enum CssFile {
     Variables, General, Chrome, Index, PagetocJs, PagetocCss,
-    Invalid, Pagetoc, Custom(&'static str) 
+    Invalid, Pagetoc, Custom(&'static str)
 }
 
 impl CssFile {
@@ -122,7 +121,7 @@ impl<'a> Ready<'a> {
     pub fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Content(String);
 
 impl Default for Content {
@@ -211,21 +210,25 @@ impl Content {
         Ok(())
     }
 
-    /// TODO: `content-max-width` + `pagetoc-width` = 95% is the best
     /// content processing in `variables.css`
-    #[rustfmt::skip]
     fn variables(&mut self, item: &str, value: &str) {
         if item == "mobile-content-max-width" {
             let content = format!(
-"\n@media only screen and (max-width:1439px) {{
+                                  "\n@media only screen and (max-width:1439px) {{
  :root{{
     --content-max-width: {};
   }}
-}}\n\n", value);
-            self.insert(&content, "}", "/* Themes */");
-        } else if item.starts_with("light") | item.starts_with("ayu") | 
-            item.starts_with("rust") | item.starts_with("navy") | item.starts_with("coal") {
-                self.fore_arg(item, value);
+}}\n\n",
+                                  value
+            );
+            self.insert(&content, "}", "/* Themes */").unwrap();
+        } else if item.starts_with("light")
+                  | item.starts_with("ayu")
+                  | item.starts_with("rust")
+                  | item.starts_with("navy")
+                  | item.starts_with("coal")
+        {
+            self.fore_arg(item, value);
         } else if self.replace(item, value).is_err() {
             self.insert(&format!("\n    --{}: {};\n", item, value), ":root", "}\n").unwrap();
         }
@@ -252,7 +255,7 @@ impl Content {
     fn fore_check<'a>(item: &'a str, n: usize, dot: bool, joint: &'a str) -> (String, &'a str) {
         let v: Vec<&str> = item.splitn(n, '-').collect();
         let d = if dot { "." } else { "" };
-        let fore = format!("\n.{} {{", v[..n - 1].join(joint));
+        let fore = format!("\n{}{} {{", d, v[..n - 1].join(joint));
         (fore, v[n - 1])
     }
 }
@@ -261,32 +264,38 @@ impl Content {
 pub struct Theme<'a> {
     pub cssfile: CssFile,
     pub content: Content, // ultimate str to be processed
+    content_cmp: Content,
     pub ready:   Ready<'a>,
     pub dir:     PathBuf,
+    path:        PathBuf,
 }
 
-#[rustfmt::skip]
 impl<'a> Default for Theme<'a> {
     fn default() -> Self {
-        Self { cssfile:  CssFile::Custom(""), content:  Content::default(),
-               ready:      Ready::default(),      dir:  PathBuf::new() }
+        Self { cssfile:     CssFile::Custom(""),
+               content:     Content::default(),
+               ready:       Ready::default(),
+               dir:         PathBuf::new(),
+               content_cmp: Content::default(),
+               path:        PathBuf::new(), }
     }
 }
 
 impl<'a> Theme<'a> {
     #[rustfmt::skip]
     pub fn from(cssfile: CssFile, ready: Ready<'a>, dir:&str) -> Self {
-        Self { cssfile, ready, content: Content::default(), dir: PathBuf::from(dir) }
+        Self { cssfile, ready, content: Content::default(), path: PathBuf::new(),
+        dir: PathBuf::from(dir), content_cmp: Content::default() }
     }
 
-    /// TODO: Avoid rewriting when configs are not changed,
-    /// or else `mdbook watch` will repeat rewriting.
-    pub fn process(mut self) -> Self { self.cssfile().content().write_theme_file() }
+    /// canonical procedure
+    pub fn process(self) -> Self { self.cssfile().content().write_theme_file() }
 
     /// Give a default or custom virtual css file marked to help content processing.
     fn cssfile(mut self) -> Self {
         let filename = self.cssfile.filename();
-        if self.dir.join(filename).exists() {
+        self.path = self.dir.join(filename);
+        if self.path.exists() {
             self.cssfile = CssFile::Custom(filename);
         }
         self
@@ -296,6 +305,7 @@ impl<'a> Theme<'a> {
     /// An empty content means not having processed the content.
     fn content(mut self) -> Self {
         self.content = Content::from(self.cssfile, &self.dir);
+        self.content_cmp = self.content.clone();
         self.content_process(None);
         self
     }
@@ -313,14 +323,6 @@ impl<'a> Theme<'a> {
         }
     }
 
-    /// create a css file on demand
-    fn write_theme_file(self) -> Self {
-        use std::fs::write;
-        write(self.dir.join(self.cssfile.filename()), self.content.get().as_bytes()).unwrap();
-        dbg!(&self);
-        self
-    }
-
     /// Swich to another cssfile and process its content, which can repeat.
     fn ready(mut self, cssfile: CssFile) -> Self {
         self.cssfile = cssfile;
@@ -336,6 +338,17 @@ impl<'a> Theme<'a> {
             .ready(CssFile::PagetocCss)
             .ready(CssFile::General)
             .ready(CssFile::Chrome);
+    }
+
+    /// create a css file on demand
+    fn write_theme_file(self) -> Self {
+        if self.content != self.content_cmp
+           || ((self.cssfile == CssFile::PagetocJs || self.cssfile == CssFile::PagetocCss)
+               && !self.path.exists())
+        {
+            std::fs::write(&self.path, self.content.get().as_bytes()).unwrap();
+        }
+        self
     }
 
     /// create the dirs on demand
@@ -360,7 +373,7 @@ impl<'a> Theme<'a> {
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
                         "#;
-        self.content.insert(insert, "<main>", "{{{ content }}}");
+        self.content.insert(insert, "<main>", "{{{ content }}}").unwrap();
     }
 
     /// update content in `css/general.css`
@@ -373,8 +386,6 @@ impl<'a> Theme<'a> {
     /// update content in `css/chrome.css`
     fn process_chrome(&mut self) {
         for (item, value) in self.ready.item_value() {
-            // let (fore, arg) = item.get().split_once("-").unwrap();
-            // self.content.fore_replace(&format!("\n.{} {{", fore), arg, value.get());
             self.content.fore_arg(item.get(), value.get());
         }
     }
