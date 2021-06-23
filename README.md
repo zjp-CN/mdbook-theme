@@ -1,5 +1,29 @@
 A preprocessor and a backend to config theme for [mdbook](https://github.com/rust-lang/mdBook), especially making a pagetoc on the right and setting full color themes from the offical [ace](https://github.com/ajaxorg/ace) editor.
 
+# installation
+
+`mdbook-theme` package includes two CLI:
+
+a preprocess `mdbook-theme` and a backend `mdbook-theme-ace` .
+
+You can get these via:
+
+1. `cargo install`
+
+```cmd
+cargo install mdbook-theme
+```
+
+2. building the latest from source
+
+```cmd
+git clone https://github.com/zjp-CN/mdbook-theme.git
+cd mdbook-theme
+cargo build
+```
+
+Any suggestion or contribution is greatly welcomed.
+
 # mdbook-theme
 
 This preprocessor does a little more work to integrate [mdBook-pagetoc](https://github.com/JorelAli/mdBook-pagetoc) (pure js/css/hbs files) with [mdBook](https://github.com/rust-lang/mdBook) which currently lacks a pagetoc (to jump within titles of the opened page) .
