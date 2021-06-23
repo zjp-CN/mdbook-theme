@@ -237,7 +237,7 @@ impl Content {
     /// deal with the config named `fore-arg: value;`
     fn fore_arg(&mut self, item: &str, value: &str) {
         for n in 2..item.split('-').count() + 1 {
-            for d in [true, false] {
+            for d in ["", ".", ":"] {
                 for j in [" ", "-"] {
                     let (fore, arg) = Content::fore_check(item, n, d, j);
                     if self.fore_replace(&fore, arg, value).is_ok() {
@@ -250,11 +250,11 @@ impl Content {
 
     /// parse `fore-arg`:
     /// `fore` may have multiple meaning, and it's complex:
-    /// 1. one word begins with/without `.` : `.content` | `body`
-    /// 2. one word will very likely join more words: `.content main` | `.nav-chapters`
-    fn fore_check<'a>(item: &'a str, n: usize, dot: bool, joint: &'a str) -> (String, &'a str) {
+    /// 1. one word begins with/without `.` , or even `:` : `.content` | `body` | `:root`
+    /// 2. one word will very likely join more words with ` ` or `-`:
+    /// `.content main` | `.nav-chapters`
+    fn fore_check<'a>(item: &'a str, n: usize, dot: &'a str, joint: &'a str) -> (String, &'a str) {
         let v: Vec<&str> = item.splitn(n, '-').collect();
-        let d = if dot { "." } else { "" };
         let fore = format!("\n{}{} {{", d, v[..n - 1].join(joint));
         (fore, v[n - 1])
     }
