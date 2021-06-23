@@ -4,10 +4,10 @@ especially making a pagetoc on the right and setting full color themes from the 
 
 # installation
 
-`mdbook-theme` package includes two CLI :
+`mdbook-theme` package includes two CLIs :
 a preprocess `mdbook-theme` and a backend `mdbook-theme-ace` .
 
-What they are actually doing is simply replacing values within files given by mdbook default or user.
+What they are actually doing is simply replacing values within files given by user or mdbook's default.
 
 You can get these via:
 
