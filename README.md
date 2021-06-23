@@ -140,6 +140,9 @@ In short, you can download a css file form [ace theme](https://github.com/ajaxor
 
 # details about the preprocessor
 
+<details>
+  <summary>expand to see the details</summary>
+
 ## when `pagetoc = true`
 
 ```toml
@@ -356,6 +359,8 @@ Therefore, if you don't modify the theme when `mdbook watch`, **run once `mdbook
 3. add `theme` in your `.gitignore` file to skip `mdbook watch`'s check on `theme` dir: this is a simple but useful way if you don't mind the `theme` dir; `mdbook build` will check the `theme` dir no matter whether it's in `.gitignore` or not : )
 
 Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduce/ban computation this tool produces during preprocess.
+
+</details>
 
 # examples
 
