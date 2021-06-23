@@ -194,7 +194,6 @@ impl Content {
         let p1 = text[pfore..].find(item).ok_or(Error::StrNotFound)? + pfore + item.len() + 2;
         let p2 = p1 + text[p1..].find(';').ok_or(Error::StrNotFound)?;
         self.get_mut().replace_range(p1..p2, value);
-        // eprintln!("\n{}", &self.get()[p1 - 20..p2 + 10]);
         Ok(())
     }
 
@@ -206,7 +205,6 @@ impl Content {
         let mut pos = text.find(find1).ok_or(Error::StrNotFound)?;
         pos = pos + text[pos..].find(find2).ok_or(Error::StrNotFound)? - 1;
         self.get_mut().replace_range(pos..pos + 1, insert);
-        // eprintln!("\n{}", &self.get()[pos - 20..pos + 20]);
         Ok(())
     }
 
@@ -237,7 +235,7 @@ impl Content {
     /// deal with the config named `fore-arg: value;`
     fn fore_arg(&mut self, item: &str, value: &str) {
         for n in 2..item.split('-').count() + 1 {
-            for d in ["", ".", ":"] {
+            for d in [true, false] {
                 for j in [" ", "-"] {
                     let (fore, arg) = Content::fore_check(item, n, d, j);
                     if self.fore_replace(&fore, arg, value).is_ok() {
@@ -253,8 +251,9 @@ impl Content {
     /// 1. one word begins with/without `.` , or even `:` : `.content` | `body` | `:root`
     /// 2. one word will very likely join more words with ` ` or `-`:
     /// `.content main` | `.nav-chapters`
-    fn fore_check<'a>(item: &'a str, n: usize, dot: &'a str, joint: &'a str) -> (String, &'a str) {
+    fn fore_check<'a>(item: &'a str, n: usize, dot: bool, joint: &'a str) -> (String, &'a str) {
         let v: Vec<&str> = item.splitn(n, '-').collect();
+        let d = if dot { "." } else { "" };
         let fore = format!("\n{}{} {{", d, v[..n - 1].join(joint));
         (fore, v[n - 1])
     }
@@ -379,7 +378,13 @@ impl<'a> Theme<'a> {
     /// update content in `css/general.css`
     fn process_general(&mut self) {
         for (item, value) in self.ready.item_value() {
-            self.content.fore_arg(item.get(), value.get());
+            let mut item_ = item.get();
+            if item_ == "root-font-size" {
+                // This case is annoying:
+                // field starts with `:` and value mixes with a comment
+                item_ = ":root-    font-size";
+            }
+            self.content.fore_arg(item_, value.get());
         }
     }
 
