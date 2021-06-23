@@ -26,6 +26,8 @@ pub enum Error {
     FileNotCreated,
     FileNotWritten,
     DirNotCreated,
+    DirNotRemoved,
+    DirNotRead,
     AceNotFound,
     MdbookNotParsed,
     DeserializedFailed,

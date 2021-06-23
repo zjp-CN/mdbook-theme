@@ -3,11 +3,11 @@ name = "mdbook-theme"
 version = "0.1.0"
 authors = ["zjpCN <jiping_zhou@foxmail.com>"]
 edition = "2018"
-keywords = ["book", "theme", "rustbook", "markdown"]
-license = "MIT OR MPL-2.0"
+keywords = ["book", "theme", "rustbook", "markdown", "ace"]
+license = "MIT OR Apache-2.0"
 readme = "README.md"
-repository = ""
-description = "A preprocessor and a backend to config theme for mdbook, especially with a pagetoc on the right"
+repository = "https://github.com/zjp-CN/mdbook-theme"
+description = "A preprocessor and a backend to config theme for mdbook, especially making a pagetoc on the right and setting full color themes from the offical ace editor"
 exclude = ["example"]
 
 [dependencies]
