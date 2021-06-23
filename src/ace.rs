@@ -69,6 +69,7 @@ impl Ace {
         Ok(())
     }
 
+    /// organize the workflow
     pub fn run(self) -> Result<()> {
         for dark in [true, false] {
             self.write(self.css_class_text(dark)?, dark)?;

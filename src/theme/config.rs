@@ -2,7 +2,7 @@ use super::{default::DEFAULT, CssFile, CssFile::Invalid, Item, Ready, Theme, Val
 use std::collections::HashMap;
 use toml::{map::Map, value::Value as MdValue};
 
-pub fn process(input: &Map<String, MdValue>, dir: &str) {
+pub fn run(input: &Map<String, MdValue>, dir: &str) {
     let mut input = input.to_owned();
     if input.remove("turn-off").map_or(false, |p| p.as_bool().unwrap_or(false)) {
         return;

@@ -1,11 +1,5 @@
 use super::{CssFile, Item, Value};
 
-// #[rustfmt::skip]
-// macro_rules! default {
-//     ($idt:ident, $e1:expr) => { (CssFile::$idt, $e1) };
-//     ($idt:ident, $e1:expr, $e2:expr) => { (CssFile::$idt, Item($e1), Value($e2)) };
-// }
-
 #[rustfmt::skip]
 pub static CSSFILES: &[(CssFile, &str)] = 
     &[default!(Variables,  "css/variables.css"),

@@ -44,7 +44,7 @@ impl Preprocessor for PreTheme {
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> result::Result<Book, errors::Error> {
         let dir = ctx.config.get("output.html.theme").map_or("theme", |s| s.as_str().unwrap());
         if let Some(theme) = ctx.config.get_preprocessor(self.name()) {
-            theme::config::process(theme, dir);
+            theme::config::run(theme, dir);
         }
 
         Ok(book)

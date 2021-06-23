@@ -2,9 +2,10 @@ A preprocessor and a backend to config theme for [mdbook](https://github.com/rus
 
 # installation
 
-`mdbook-theme` package includes two CLI:
-
+`mdbook-theme` package includes two CLI :
 a preprocess `mdbook-theme` and a backend `mdbook-theme-ace` .
+
+What they are actually doing is simply replacing values within files given by mdbook default or user.
 
 You can get these via:
 
@@ -91,7 +92,8 @@ additional-css = ["theme/pagetoc.css"] # This tool will produce it!
 additional-js = ["theme/pagetoc.js"]   # This tool will produce it!
 ```
 
-You are informed that this preprocessor can be utterly replaced by simply modifying files involved.
+Attention: local files in `theme` dir are prior. So if you need or modify a theme based on the
+complete default this tool provide, removing the whole `theme` dir is recommended.
 
 # mdbook-theme-ace
 
@@ -307,7 +309,7 @@ light-inline-code-color = "#F42C4C"
 
 ## if not set `pagetoc = true`
 
-If a user did *not* set `pagetoc = true` (or equivalently `pagetoc = false`), ` Ready` will get en **empty** default, meaning this tool completely acts with user's configs.
+If a user did *not* set `pagetoc = true` (or equivalently `pagetoc = false`), ` Ready` will get an **empty** default, meaning this tool completely acts with user's configs.
 
 The user can still set anything that only works with pagetoc's presence, though that setting will *not* work (and it will lie in css files).
 
@@ -317,9 +319,9 @@ Both circumstances are **ready** to go!
 
 ## avoid repeating call on this tool when `mdbook watch`
 
-Once `mdbook watch` detects your files changed, freshing leads to invoke `preprocessor.theme`, and `preprocessor.theme` reads from `book.toml` and `Theme` dir. When `preprocessor.theme` finds your css/js files are not consistent with what it computes, it'll cover everything concerned. The procedure holds back and forth, in the backyard ...
+Once `mdbook watch` detects your files changed, freshing leads to invoke `preprocessor.theme`, and `preprocessor.theme` reads from `book.toml` and `Theme` dir. When `preprocessor.theme` finds your css/js files are not consistent with what it computes, it'll cover everything concerned. (Of course, if they are consistent, no file will be rewritten.) The procedure holds back and forth, in the backyard ...
 
-The point is that this tool, unlike the preprocessors aiming to deal with contents in md files and obliged to keep up with revision, produces theme files that are needless to check as long as nothing concerned changes. Sadly, this tool are incapable of doing this kind of check, beacuse I haven't found a solution, causing whether to check is at the user's explicit option.
+The point is that this tool, unlike the preprocessors aiming to deal with contents in md files and obliged to keep up with revision, produces theme files that are **needless to check (compute and compare) as long as nothing concerned changes**. Sadly, this tool are incapable of doing this kind of check, beacuse I haven't found a solution, causing whether to check is at the user's explicit option (see the following suggestions).
 
 Since all theme configs are written into files under `theme` dir or appended only once, `mdbook build` will **not cause repeating** .
 
