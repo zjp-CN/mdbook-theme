@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/zjp-CN/mdbook-theme"
 description = "A preprocessor and a backend to config theme for mdbook, especially making a pagetoc on the right and setting full color themes from the offical ace editor"
-exclude = ["example"]
+exclude = ["examples"]
 
 [dependencies]
 clap = "2.33.3"
