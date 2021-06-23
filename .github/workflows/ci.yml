@@ -31,15 +31,6 @@ jobs:
           strip target/release/mdbook-theme
           strip target/release/mdbook-theme-ace
           mkdir -p release
-      - name: UPX Release Mac
-        if: matrix.os == 'macos-latest'
-        uses: crazy-max/ghaction-upx@v1
-        with:
-          version: latest
-          files: |
-            target/release/mdbook-theme
-            target/release/mdbook-theme-ace
-          args: -fq 
           
       # Condition to only run this whenever the runner os is Ubuntu
       - name: Build Release Linux
@@ -49,8 +40,9 @@ jobs:
           strip target/release/mdbook-theme-ace
           mkdir -p release
 
-      - name: UPX on Ubuntu an Mac
-        if: matrix.os == 'ubuntu-latest' || matrix.os == 'macos-latest'
+      - name: UPX on Ubuntu
+        # not support on mac
+        if: matrix.os == 'ubuntu-latest' 
         uses: crazy-max/ghaction-upx@v1
         with:
           version: latest
