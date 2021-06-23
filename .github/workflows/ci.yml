@@ -31,6 +31,8 @@ jobs:
           strip target/release/mdbook-theme
           strip target/release/mdbook-theme-ace
           mkdir -p release
+      - name: UPX Release Mac
+        if: matrix.os == 'macos-latest'
         uses: crazy-max/ghaction-upx@v1
         with:
           version: latest
