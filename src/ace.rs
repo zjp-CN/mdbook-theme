@@ -1,4 +1,5 @@
 use super::{Error, Result};
+use std::io::Read;
 use std::path::PathBuf;
 
 use serde_derive::{Deserialize, Serialize};
@@ -9,8 +10,9 @@ pub struct Ace {
     pub theme_white:     String,
     pub theme_dark:      String,
     pub below_build_dir: bool,
-    pub build_dir:       PathBuf,
-    pub theme_dir:       PathBuf,
+    pub build_dir:       PathBuf, // generally `full-path/book`
+    pub theme_dir:       PathBuf, // generally `theme`
+    pub destination:     PathBuf, // generally `full-path/book/theme-ace`
 }
 
 impl Ace {
@@ -20,30 +22,24 @@ impl Ace {
     ///
     /// If a user both set the config in `book.toml` and have `ace-*.css` file,
     /// the config will be ignored.
-    pub fn css_text(&self, dark: bool) -> Result<String> {
-        let mut css = String::new();
+    pub fn css_class_text(&self, dark: bool) -> Result<(String, String)> {
+        let mut css_text = String::new();
         let ace_file = format!("ace-{}.css", if dark { "dark" } else { "white" });
         let path = self.theme_dir.join(ace_file);
 
         if path.exists() || self.theme_dir.join("ace.css").exists() {
-            use std::io::Read;
-            std::fs::File::open(path).unwrap().read_to_string(&mut css);
+            std::fs::File::open(path).unwrap().read_to_string(&mut css_text);
         } else if let Some(v) = self.defult_css(dark) {
-            css = String::from(unsafe { std::str::from_utf8_unchecked(v) });
+            css_text = String::from(unsafe { std::str::from_utf8_unchecked(v) });
         } else {
             return Err(Error::AceNotFound);
         }
 
-        css = css.replace(|x| x == '\n' || x == '\'', &" ");
-        let p1 = css.find(".ace-").ok_or(Error::StrNotFound)?;
+        css_text = css_text.replace(|x| x == '\n' || x == '"', &" ");
+        let p1 = css_text.find(".ace-").ok_or(Error::StrNotFound)?;
         let css_class =
-            &css[p1 + 1..p1 + &css[p1..].find(' ').ok_or(Error::StrNotFound)?].to_string();
-        let css_class_ = if dark { "ace-tomorrow-night" } else { "ace-dawn" };
-        css = css.replace(css_class, css_class_);
-        Ok(format!("    t.isDark ={}0, t.cssClass = '{}',\n    t.cssText ='{}';\n",
-                   if dark { '!' } else { ' ' },
-                   css_class_,
-                   css))
+            css_text[p1 + 1..p1 + css_text[p1..].find(' ').ok_or(Error::StrNotFound)?].to_string();
+        Ok((css_class, css_text))
     }
 
     /// get the defult css bytes matched with the user's config and a local css not found
@@ -58,55 +54,64 @@ impl Ace {
     }
 
     /// get the target content to be written
-    pub fn write(&self, css: String, dark: bool) -> Result<()> {
-        use std::io::Write;
+    pub fn write(&self, css_: (String, String), dark: bool) -> Result<()> {
         let file = if dark { "theme-tomorrow_night.js" } else { "theme-dawn.js" };
         // let path = &self.build_dir.join(file);
         let path = &self.build_dir.join("html").join(file);
-        dbg!(&path);
-        std::fs::write(path, css).map_err(|_| Error::FileNotWritten)?;
+
+        let (css_class, css_text) = css_;
+        let mut content = String::new();
+        std::fs::File::open(path).unwrap().read_to_string(&mut content);
+        content.replace_range(find(&content, "cssClass=\"")?, &css_class);
+        content.replace_range(find(&content, "cssText=\"")?, &css_text);
+
+        std::fs::write(path, content).map_err(|_| Error::FileNotWritten)?;
         Ok(())
     }
 
-    /// TODO: `below_build_dir` haven't done
     pub fn run(self) -> Result<()> {
         for dark in [true, false] {
-            let content = format!("{}\n{}\n{}", ACE_HEAD, self.css_text(dark)?, ACE_TAIL);
-            self.write(content, dark)?;
+            self.write(self.css_class_text(dark)?, dark)?;
+        }
+        self.below_build_dir()?;
+        self.remove_destination();
+        Ok(())
+    }
+
+    /// move `book/html` to `book/`
+    pub fn below_build_dir(&self) -> Result<()> {
+        if self.below_build_dir {
+            use mdbook::utils::fs::copy_files_except_ext as copy;
+            let html = self.build_dir.join("html");
+            copy(&html, &self.build_dir, true, None, &[]).map_err(|_| Error::DirNotCreated)?;
+            std::fs::remove_dir_all(html).map_err(|_| Error::DirNotRemoved)?;
         }
         Ok(())
     }
+
+    /// Remove `book/theme-ace`: if it's not empty, it'll not be removed.
+    /// But for now, it should be empty.
+    fn remove_destination(&self) { std::fs::remove_dir(&self.destination).unwrap_or_default(); }
 }
 
 impl Default for Ace {
     fn default() -> Self {
         Self { theme_white:     String::from(""),
                theme_dark:      String::from(""),
-               build_dir:       PathBuf::from(""), // TODO: move to `book` dir
+               build_dir:       PathBuf::from(""),
                theme_dir:       PathBuf::from(""),
+               destination:     PathBuf::from(""),
                below_build_dir: true, }
     }
 }
 
-static ACE_HEAD: &str = r##"
-ace.define("ace/theme/tomorrow_night", 
-  ["require", "exports", "module", "ace/lib/dom"], 
-  function(e, t, n) {
-"##;
-
-static ACE_TAIL: &str = r##"
-    var r = e("../lib/dom");
-    r.importCssString(t.cssText, t.cssClass)
-});
-
-(function() {
-  ace.require(["ace/theme/tomorrow_night"], function(m) {
-    if (typeof module == "object" && typeof exports == "object" && module) {
-        module.exports = m;
-    }
-  });
-})();
-"##;
+/// find the positions of double quotation marks behind cssClass or cssText
+/// target: "cssClass=\"" | "cssText=\""
+fn find(content: &str, target: &str) -> Result<std::ops::Range<usize>> {
+    let mut p1 = content.find(&target).ok_or(Error::StrNotFound)? + target.len();
+    let p2 = p1 + content[p1..].find('"').ok_or(Error::StrNotFound)?;
+    Ok(p1..p2)
+}
 
 default! {
     "./ace/theme/ambiance.css",                AMBIANCE;

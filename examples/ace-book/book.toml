@@ -10,5 +10,5 @@ title = "ace"
 editable = true
 
 [output.theme-ace]
-theme-white = "eclipse"
-theme-dark = "tomorrow_night_bright"
+theme-white = "github"
+theme-dark = "solarized_dark"

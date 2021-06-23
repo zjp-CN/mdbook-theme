@@ -6,10 +6,8 @@ src = "src"
 title = "pre"
 
 [preprocessor.theme]
-#blow-up = true
 pagetoc = true
 #turn-off = true
-#a = "a"
 #pagetoc-fontsize = "15px"
 #content-max-width = "85%"
 #pagetoc-width = "10%"

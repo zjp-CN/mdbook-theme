@@ -9,13 +9,10 @@ fn main() -> Result<()> {
                           .map_err(|_| Error::DeserializedFailed)?
                           .ok_or(Error::DeserializedFailed)?;
     cfg.build_dir = ctx.root.join(&ctx.config.build.build_dir);
-    // cfg.build_dir = ctx.config.build.build_dir.clone();
+    cfg.destination = ctx.root.join(&ctx.destination);
     cfg.theme_dir = ctx.config
                        .get("output.html.theme")
                        .map_or(PathBuf::from("theme"), |t| PathBuf::from(t.as_str().unwrap()));
-    dbg!(&cfg);
 
-    let path = std::env::current_dir().unwrap();
-    println!("The current directory is {}", path.display());
     cfg.run()
 }
