@@ -40,7 +40,6 @@ jobs:
             target/release/mdbook-theme
             target/release/mdbook-theme-ace
           args: -fq 
-        run: tar -C ./target/release/ -czvf ./release/mdbook-theme_linux.tar.gz ./mdbook-theme ./mdbook-theme-ace
           
       # Condition to only run this whenever the runner os is Ubuntu
       - name: Build Release Linux
