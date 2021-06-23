@@ -25,6 +25,9 @@ cd mdbook-theme
 cargo build
 ```
 
+3. download and unzip a [complied release](https://github.com/zjp-CN/mdbook-theme/releases),
+put them in your system path.
+
 Any suggestion or contribution is greatly welcomed.
 
 # mdbook-theme
