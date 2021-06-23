@@ -356,3 +356,94 @@ Therefore, if you don't modify the theme when `mdbook watch`, **run once `mdbook
 3. add `theme` in your `.gitignore` file to skip `mdbook watch`'s check on `theme` dir: this is a simple but useful way if you don't mind the `theme` dir; `mdbook build` will check the `theme` dir no matter whether it's in `.gitignore` or not : )
 
 Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduce/ban computation this tool produces during preprocess.
+
+# examples
+
+## Rust Book
+
+```diff
+ [output.html]
+-additional-css = ["ferris.css", "theme/2018-edition.css"]
+-additional-js = ["ferris.js"]
++additional-css = ["ferris.css", "theme/2018-edition.css", "theme/pagetoc.css"]
++additional-js = ["ferris.js", "theme/pagetoc.js"]
+ git-repository-url = "https://github.com/rust-lang/book"
++
++[preprocessor.theme]
++pagetoc = true
++sidebar-width = "280px"
++content-max-width = "75%"
++content-main-margin-left = "5%"
++content-main-margin-right = "5%"
++root-font-size = "80%"
++sidebar-font-size = "0.85em"
+```
+
+before : [https://doc.rust-lang.org/book](https://doc.rust-lang.org/book)
+
+![image.png](assets/image-20210623231453-0102ygv.png)
+
+after : [http://129.28.186.100/rust-book](http://129.28.186.100/rust-book)
+
+![image.png](assets/image-20210623231552-iwnqhs0.png)
+
+## Rust Reference
+
+```diff
+ [output.html]
+-additional-css = ["theme/reference.css"]
++additional-css = ["theme/reference.css", "theme/pagetoc.css"]
++additional-js = ["theme/pagetoc.js"]
+...
++[preprocessor.theme]
++pagetoc = true
++sidebar-width = "240px"
+```
+
+before : [https://doc.rust-lang.org/nightly/reference](https://doc.rust-lang.org/nightly/reference)
+
+![image.png](assets/image-20210623232913-ex16lxj.png)
+
+after : [http://129.28.186.100/rust-reference](http://129.28.186.100/rust-reference)
+
+![image.png](assets/image-20210623232802-551j8ck.png)
+
+## Rust by Example
+
+```diff
++[preprocessor.theme]
++pagetoc = false
++sidebar-width = "290px"
++content-max-width = "85%"
++root-font-size = "75%"
+
++[output.html]
++#additional-css = ["theme/pagetoc.css"]
++#additional-js = ["theme/pagetoc.js"]
+
++[output.theme-ace]
++theme-white = "ambiance"
++theme-dark = "solarized_dark"
+```
+
+before : [https://doc.rust-lang.org/stable/rust-by-example](https://doc.rust-lang.org/stable/rust-by-example)
+
+![image.png](assets/image-20210623234530-760uke0.png)
+
+![image.png](assets/image-20210623235115-5t5j2z2.png)
+
+after : [http://129.28.186.100/rust-by-example](http://129.28.186.100/rust-by-example)
+
+![image.png](assets/image-20210623235016-8d4be37.png)
+
+![image.png](assets/image-20210623234953-bs9jgtf.png)
+
+## Others
+
+Rust API Guidelines (Chinese Version): [https://zjp-cn.github.io/api-guidelines](https://zjp-cn.github.io/api-guidelines)
+
+![image.png](assets/image-20210623235339-kqxm3ur.png)
+
+The Little Book of Rust Macros (Updated & Chinese Version): [https://zjp-cn.github.io/tlborm](https://zjp-cn.github.io/tlborm)
+
+![image.png](assets/image-20210623235527-jqu0pto.png)
