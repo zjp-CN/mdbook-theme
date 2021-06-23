@@ -40,11 +40,11 @@ And it makes some modification of css easily done just via a few lines in book.t
 
 ```toml
 [preprocessor.theme]
-pagetoc = true
+pagetoc        = true
 
 [output.html]
-additional-css = ["theme/pagetoc.css"] 
-additional-js = ["theme/pagetoc.js"] 
+additional-css = ["theme/pagetoc.css"]
+additional-js  = ["theme/pagetoc.js"]
 ```
 
 * If you want to config more by yourself, refer to the fully supported configs as listed below:
@@ -52,49 +52,49 @@ additional-js = ["theme/pagetoc.js"]
 ```toml
 [preprocessor.theme]
 # enable pagetoc (toc on the left)
-pagetoc = true
+pagetoc                   = true
 
 # some variables related (defined in theme/css/variables.css)
 # `content-max-width` + `pagetoc-width` = 95% seems the best
-pagetoc-width = "13%"
-content-max-width = "82%"
-pagetoc-fontsize = "14.5px"
-sidebar-width = "300px"
-menu-bar-height = "40px"  # memu-bar = the bar on the top
-page-padding = "15px"
-mobile-content-max-width = "98%"
+pagetoc-width             = "13%"
+content-max-width         = "82%"
+pagetoc-fontsize          = "14.5px"
+sidebar-width             = "300px"
+menu-bar-height           = "40px"   # memu-bar = the bar on the top
+page-padding              = "15px"
+mobile-content-max-width  = "98%"
 
-# layout 
-content-padding = "0 10px"
-content-main-margin-left = "2%"
+# layout
+content-padding           = "0 10px"
+content-main-margin-left  = "2%"
 content-main-margin-right = "2%"
-nav-chapters-max-width = "auto"
-nav-chapters-min-width = "auto"
-chapter-line-height = "2em"
-section-line-height = "1.5em"
+nav-chapters-max-width    = "auto"
+nav-chapters-min-width    = "auto"
+chapter-line-height       = "2em"
+section-line-height       = "1.5em"
 
 # modify some fontsizes
-root-font-size = "70%"    # control the main font-size
-body-font-size = "1.5rem"
-code-font-size = "0.9em"
-sidebar-font-size = "1em" # sidebar = toc on the left
+root-font-size            = "70%"    # control the main font-size
+body-font-size            = "1.5rem"
+code-font-size            = "0.9em"
+sidebar-font-size         = "1em"    # sidebar = toc on the left
 
 # modify some colors under ayu/coal/light/navy/rust theme
-coal-inline-code-color = "#ffb454"
-light-inline-code-color = "#F42C4C"
-navy-inline-code-color = "#ffb454"
-rust-inline-code-color = "#F42C4C"
-light-links = "#1f1fff"
-rust-links = "#1f1fff"
+coal-inline-code-color    = "#ffb454"
+light-inline-code-color   = "#F42C4C"
+navy-inline-code-color    = "#ffb454"
+rust-inline-code-color    = "#F42C4C"
+light-links               = "#1f1fff"
+rust-links                = "#1f1fff"
 
 # if true, never read and touch the files in theme dir
-turn-off = false
+turn-off                  = false
 
 # If you set `pagetoc = true`, you need to set the following as well:
 [output.html]
-theme = "theme" # this is the default if not explicitly set
-additional-css = ["theme/pagetoc.css"] # This tool will produce it!
-additional-js = ["theme/pagetoc.js"]   # This tool will produce it!
+theme                     = "theme" # this is the default if not explicitly set
+additional-css            = ["theme/pagetoc.css"]  # This tool will produce it!
+additional-js             = ["theme/pagetoc.js"]   # This tool will produce it!
 ```
 
 Attention: local files in `theme` dir are prior. So if you need or modify a theme based on the
@@ -108,12 +108,12 @@ This backend mainly deals with the rendered theme files that may not be handled 
 # here is a must to load ace editor in mdbook
 [output.html]
 [output.html.playground]
-editable = true
+editable        = true
 
 [output.theme-ace]
-theme-white = "dawn" 
-theme-dark = "tomorrow_night"
-below-build-dir = true 
+theme-white     = "dawn"
+theme-dark      = "tomorrow_night"
+below-build-dir = true
 ```
 
 supported the official [ace theme names](https://github.com/ajaxorg/ace/tree/master/lib/ace/theme) :
@@ -371,17 +371,17 @@ Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduc
 -additional-css = ["ferris.css", "theme/2018-edition.css"]
 -additional-js = ["ferris.js"]
 +additional-css = ["ferris.css", "theme/2018-edition.css", "theme/pagetoc.css"]
-+additional-js = ["ferris.js", "theme/pagetoc.js"]
++additional-js  = ["ferris.js", "theme/pagetoc.js"]
  git-repository-url = "https://github.com/rust-lang/book"
 +
 +[preprocessor.theme]
-+pagetoc = true
-+sidebar-width = "280px"
-+content-max-width = "75%"
-+content-main-margin-left = "5%"
++pagetoc                   = true
++sidebar-width             = "280px"
++content-max-width         = "75%"
++content-main-margin-left  = "5%"
 +content-main-margin-right = "5%"
-+root-font-size = "80%"
-+sidebar-font-size = "0.85em"
++root-font-size            = "80%"
++sidebar-font-size         = "0.85em"
 ```
 
 before : [https://doc.rust-lang.org/book](https://doc.rust-lang.org/book)
@@ -398,10 +398,10 @@ after : [http://129.28.186.100/rust-book](http://129.28.186.100/rust-book)
  [output.html]
 -additional-css = ["theme/reference.css"]
 +additional-css = ["theme/reference.css", "theme/pagetoc.css"]
-+additional-js = ["theme/pagetoc.js"]
++additional-js  = ["theme/pagetoc.js"]
 ...
 +[preprocessor.theme]
-+pagetoc = true
++pagetoc       = true
 +sidebar-width = "240px"
 ```
 
@@ -417,16 +417,16 @@ after : [http://129.28.186.100/rust-reference](http://129.28.186.100/rust-refere
 
 ```diff
 +[preprocessor.theme]
-+pagetoc = false
-+sidebar-width = "290px"
++pagetoc           = false
++sidebar-width     = "290px"
 +content-max-width = "85%"
-+root-font-size = "75%"
++root-font-size    = "75%"
 
 +[output.html]
 
 +[output.theme-ace]
-+theme-white = "ambiance"
-+theme-dark = "solarized_dark"
++theme-white       = "ambiance"
++theme-dark        = "solarized_dark"
 ```
 
 before : [https://doc.rust-lang.org/stable/rust-by-example](https://doc.rust-lang.org/stable/rust-by-example)
