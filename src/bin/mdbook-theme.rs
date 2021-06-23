@@ -7,8 +7,8 @@ use std::io;
 use std::process;
 
 pub fn make_app() -> App<'static, 'static> {
-    App::new("nop")
-        .about("A mdbook preprocessor which does precisely nothing")
+    App::new("mdbook-theme")
+        .about("A mdbook preprocessor to config theme for mdbook, especially making a pagetoc on the right.")
         .subcommand(
             SubCommand::with_name("supports")
                 .arg(Arg::with_name("renderer").required(true))
