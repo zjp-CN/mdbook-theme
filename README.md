@@ -369,11 +369,10 @@ Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduc
 ```diff
  [output.html]
 -additional-css = ["ferris.css", "theme/2018-edition.css"]
--additional-js = ["ferris.js"]
+-additional-js  = ["ferris.js"]
 +additional-css = ["ferris.css", "theme/2018-edition.css", "theme/pagetoc.css"]
 +additional-js  = ["ferris.js", "theme/pagetoc.js"]
- git-repository-url = "https://github.com/rust-lang/book"
-+
+
 +[preprocessor.theme]
 +pagetoc                   = true
 +sidebar-width             = "280px"

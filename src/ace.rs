@@ -28,14 +28,14 @@ impl Ace {
         let path = self.theme_dir.join(ace_file);
 
         if path.exists() || self.theme_dir.join("ace.css").exists() {
-            std::fs::File::open(path).unwrap().read_to_string(&mut css_text);
+            std::fs::File::open(path).unwrap().read_to_string(&mut css_text).unwrap();
         } else if let Some(v) = self.defult_css(dark) {
             css_text = String::from(unsafe { std::str::from_utf8_unchecked(v) });
         } else {
             return Err(Error::AceNotFound);
         }
 
-        css_text = css_text.replace(|x| x == '\n' || x == '"', &" ");
+        css_text = css_text.replace(|x| x == '\n' || x == '"', " ");
         let p1 = css_text.find(".ace-").ok_or(Error::StrNotFound)?;
         let css_class =
             css_text[p1 + 1..p1 + css_text[p1..].find(' ').ok_or(Error::StrNotFound)?].to_string();
@@ -56,12 +56,11 @@ impl Ace {
     /// get the target content to be written
     pub fn write(&self, css_: (String, String), dark: bool) -> Result<()> {
         let file = if dark { "theme-tomorrow_night.js" } else { "theme-dawn.js" };
-        // let path = &self.build_dir.join(file);
         let path = &self.build_dir.join("html").join(file);
 
         let (css_class, css_text) = css_;
         let mut content = String::new();
-        std::fs::File::open(path).unwrap().read_to_string(&mut content);
+        std::fs::File::open(path).unwrap().read_to_string(&mut content).unwrap();
         content.replace_range(find(&content, "cssClass=\"")?, &css_class);
         content.replace_range(find(&content, "cssText=\"")?, &css_text);
 
@@ -109,7 +108,7 @@ impl Default for Ace {
 /// find the positions of double quotation marks behind cssClass or cssText
 /// target: "cssClass=\"" | "cssText=\""
 fn find(content: &str, target: &str) -> Result<std::ops::Range<usize>> {
-    let mut p1 = content.find(&target).ok_or(Error::StrNotFound)? + target.len();
+    let p1 = content.find(&target).ok_or(Error::StrNotFound)? + target.len();
     let p2 = p1 + content[p1..].find('"').ok_or(Error::StrNotFound)?;
     Ok(p1..p2)
 }

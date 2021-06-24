@@ -1,10 +1,7 @@
-#![allow(unused)]
 use mdbook::book::Book;
 use mdbook::errors;
 use mdbook::preprocess::{Preprocessor, PreprocessorContext};
 use std::result;
-
-use crate::theme::{CssFile, Item, Value};
 
 /// Generate some default static value. This macro is not public.
 macro_rules! default {
