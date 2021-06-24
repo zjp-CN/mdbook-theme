@@ -34,9 +34,9 @@ Any suggestion or contribution is greatly welcomed.
 
 This preprocessor does a little more work to integrate [mdBook-pagetoc](https://github.com/JorelAli/mdBook-pagetoc) (pure js/css/hbs files) with [mdBook](https://github.com/rust-lang/mdBook) which currently lacks a pagetoc (to jump within titles of the opened page) .
 
-And it makes some modification of css easily done just via a few lines in book.toml ( fine with or without `pagetoc` ), for example, common layout, fontsize and color settings.
+And it makes easy modification of css just via a few lines in book.toml ( fine with or without `pagetoc` ), for example, common layout, fontsize and color settings.
 
-* If you just want a pagetoc on the right, use this in `book.timl` :
+* If you just want a pagetoc on the right, use this in `book.toml` :
 
 ```toml
 [preprocessor.theme]
