@@ -17,7 +17,7 @@ You can get these via:
 cargo install mdbook-theme
 ```
 
-2. or building the latest from source
+2. or build the latest from source
 
 ```cmd
 git clone https://github.com/zjp-CN/mdbook-theme.git
@@ -28,7 +28,7 @@ cargo build
 3. or download and unzip a [complied release](https://github.com/zjp-CN/mdbook-theme/releases),
 then put them in your system path.
 
-4. if you want to use this within github action, add this in your yml file:
+4. if you want to use this within github action and publish through github pages, add this in your yml file:
 
 ```yml
 - name: Setup mdbook-theme latest
