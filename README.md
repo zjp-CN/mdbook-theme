@@ -1,5 +1,5 @@
 A preprocessor and a backend to config themes for [mdbook](https://github.com/rust-lang/mdBook), 
-especially making a pagetoc on the right and setting full color themes from the offical 
+especially creating a pagetoc on the right and setting full color themes from the offical 
 [ace](https://github.com/ajaxorg/ace) editor.
 
 # installation
