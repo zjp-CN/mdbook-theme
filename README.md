@@ -17,7 +17,7 @@ You can get these via:
 cargo install mdbook-theme
 ```
 
-2. building the latest from source
+2. or building the latest from source
 
 ```cmd
 git clone https://github.com/zjp-CN/mdbook-theme.git
@@ -25,8 +25,25 @@ cd mdbook-theme
 cargo build
 ```
 
-3. download and unzip a [complied release](https://github.com/zjp-CN/mdbook-theme/releases),
-put them in your system path.
+3. or download and unzip a [complied release](https://github.com/zjp-CN/mdbook-theme/releases),
+then put them in your system path.
+
+4. if you want to use this within github action, add this in your yml file:
+
+```yml
+- name: Setup mdbook-theme latest
+  run: |
+    curl -s https://api.github.com/repos/zjp-CN/mdbook-theme/releases/latest \
+         | grep browser_download_url \
+         | grep mdbook-theme_linux \
+         | cut -d '"' -f 4 \
+         | wget -qi -
+    tar -xvzf mdbook-theme_linux.tar.gz
+    echo $PWD >> $GITHUB_PATH
+```
+
+a full example about how to set up mdbook and mdbook-theme:
+[gh-pages.yml](https://github.com/zjp-CN/tlborm/blob/master/.github/workflows/gh-pages.yml)
 
 Any suggestion or contribution is greatly welcomed.
 
