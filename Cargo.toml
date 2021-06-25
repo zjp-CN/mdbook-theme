@@ -7,7 +7,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/zjp-CN/mdbook-theme"
 keywords = ["book", "theme", "rustbook", "markdown", "ace"]
-description = "A preprocessor and a backend to config theme for mdbook, especially creating a pagetoc on the left and setting full color themes from the offical ace editor"
+description = "A preprocessor and a backend to config theme for mdbook, especially creating a pagetoc on the right and setting full color themes from the offical ace editor"
 exclude = ["examples", "CHANGELOG.md", "assets"]
 
 [dependencies]
