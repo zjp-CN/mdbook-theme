@@ -68,7 +68,7 @@ additional-js  = ["theme/pagetoc.js"]
 
 ```toml
 [preprocessor.theme]
-# enable pagetoc (toc on the left)
+# enable pagetoc (toc on the right)
 pagetoc                   = true
 
 # some variables related (defined in theme/css/variables.css)
