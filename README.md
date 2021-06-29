@@ -134,7 +134,7 @@ theme-dark      = "tomorrow_night"
 below-build-dir = true
 ```
 
-supported the official [ace theme names](https://github.com/ajaxorg/ace/tree/master/lib/ace/theme) :
+full-supported official [ace theme names](https://github.com/ajaxorg/ace/tree/master/lib/ace/theme) :
 
 ```text
                ambiance | chaos          |              chrome | clouds                | clouds_midnight | cobalt    |
@@ -146,7 +146,7 @@ supported the official [ace theme names](https://github.com/ajaxorg/ace/tree/mas
 tomorrow_night_eighties | twilight       |         vibrant_ink | xcode                 |
 ```
 
-Note: for simplicity, this tool just directly modify the `cssText` in *theme-dawn.js* and *theme-tomorrow_night.js* . That is to say, if you set `theme-white = "xcode"` , you may find there is **no** *theme-xcode.js* or *theme-xcode.js* in the *build_dir* .
+Note: for simplicity, this tool just directly modify the `cssText` in *theme-dawn.js* and *theme-tomorrow_night.js* . That is to say, if you set `theme-white = "xcode"` , you may find there is **no** *theme-xcode.css* or *theme-xcode.js* in the *build_dir* .
 
 You are allowed to provide the `ace-dark.css` and `ace-white.css` in the `theme` dir which accords with `output.html` table to shadow the default given by the official ace. And the `theme-white/dark` configs beneath `output.theme-ace` are ignored.
 
