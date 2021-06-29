@@ -43,7 +43,8 @@ then put them in your system path.
 ```
 
 a full example about how to set up mdbook and mdbook-theme:
-[gh-pages.yml](https://github.com/zjp-CN/tlborm/blob/master/.github/workflows/gh-pages.yml)
+[mdbook-template](https://github.com/zjp-CN/mdbook-template) and 
+[gh-pages.yml](https://github.com/zjp-CN/mdbook-template/blob/main/.github/workflows/gh-pages.yml)
 
 Any suggestion or contribution is greatly welcomed.
 
