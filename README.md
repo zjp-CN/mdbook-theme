@@ -343,6 +343,8 @@ More likely, a user may actually set `pagetoc = "true"`, then `Ready` will  get 
 
 Both circumstances are **ready** to go!
 
+</details>
+
 ## avoid repeating call on this tool when `mdbook watch`
 
 Once `mdbook watch` detects your files changed, freshing leads to invoke `preprocessor.theme`, and `preprocessor.theme` reads from `book.toml` and `Theme` dir. When `preprocessor.theme` finds your css/js files are not consistent with what it computes, it'll cover everything concerned. (Of course, if they are consistent, no file will be rewritten.) The procedure holds back and forth, in the backyard ...
@@ -377,8 +379,6 @@ Therefore, if you don't modify the theme when `mdbook watch`, **run once `mdbook
 3. add `theme` in your `.gitignore` file to skip `mdbook watch`'s check on `theme` dir: this is a simple but useful way if you don't mind the `theme` dir; `mdbook build` will check the `theme` dir no matter whether it's in `.gitignore` or not : )
 
 Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduce/ban computation this tool produces during preprocess.
-
-</details>
 
 # examples
 
