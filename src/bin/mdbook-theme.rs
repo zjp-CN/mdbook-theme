@@ -34,11 +34,13 @@ fn handle_preprocessing() -> Result<(), Error> {
     let version_req = VersionReq::parse(mdbook::MDBOOK_VERSION)?;
 
     if !version_req.matches(&book_version) {
-        eprintln!("Warning: The {} plugin was built against version {} of mdbook, but we're \
+        eprintln!(
+            "Warning: The {} plugin was built against version {} of mdbook, but we're \
                    being called from version {}",
-                  PreTheme.name(),
-                  mdbook::MDBOOK_VERSION,
-                  ctx.mdbook_version);
+            PreTheme.name(),
+            mdbook::MDBOOK_VERSION,
+            ctx.mdbook_version
+        );
     }
 
     let processed_book = PreTheme.run(&ctx, book)?;

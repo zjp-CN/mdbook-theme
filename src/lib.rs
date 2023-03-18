@@ -36,10 +36,15 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub struct PreTheme;
 
 impl Preprocessor for PreTheme {
-    fn name(&self) -> &str { "theme" }
+    fn name(&self) -> &str {
+        "theme"
+    }
 
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> result::Result<Book, errors::Error> {
-        let dir = ctx.config.get("output.html.theme").map_or("theme", |s| s.as_str().unwrap());
+        let dir = ctx
+            .config
+            .get("output.html.theme")
+            .map_or("theme", |s| s.as_str().unwrap());
         if let Some(theme) = ctx.config.get_preprocessor(self.name()) {
             theme::config::run(theme, dir);
         }
@@ -47,5 +52,7 @@ impl Preprocessor for PreTheme {
         Ok(book)
     }
 
-    fn supports_renderer(&self, renderer: &str) -> bool { renderer == "html" }
+    fn supports_renderer(&self, renderer: &str) -> bool {
+        renderer == "html"
+    }
 }
