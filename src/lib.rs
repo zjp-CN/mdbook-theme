@@ -1,7 +1,12 @@
-use mdbook::book::Book;
-use mdbook::errors;
-use mdbook::preprocess::{Preprocessor, PreprocessorContext};
-use std::result;
+use mdbook::{
+    book::Book,
+    errors,
+    preprocess::{Preprocessor, PreprocessorContext},
+};
+use std::{
+    path::{Path, PathBuf},
+    result,
+};
 
 /// Generate some default static value. This macro is not public.
 macro_rules! default {
@@ -35,16 +40,18 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct PreTheme;
 
+/// `./theme` dir
+pub fn theme_dir(root: &Path) -> PathBuf {
+    root.join("theme")
+}
+
 impl Preprocessor for PreTheme {
     fn name(&self) -> &str {
         "theme"
     }
 
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> result::Result<Book, errors::Error> {
-        let dir = ctx
-            .config
-            .get("output.html.theme")
-            .map_or("theme", |s| s.as_str().unwrap());
+        let dir = theme_dir(&ctx.root);
         if let Some(theme) = ctx.config.get_preprocessor(self.name()) {
             theme::config::run(theme, dir);
         }

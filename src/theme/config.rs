@@ -1,8 +1,8 @@
 use super::{default::DEFAULT, CssFile, CssFile::Invalid, Item, Ready, Theme, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 use toml::{map::Map, value::Value as MdValue};
 
-pub fn run(input: &Map<String, MdValue>, dir: &str) {
+pub fn run(input: &Map<String, MdValue>, dir: PathBuf) {
     let mut input = input.to_owned();
     if input
         .remove("turn-off")
@@ -11,13 +11,13 @@ pub fn run(input: &Map<String, MdValue>, dir: &str) {
         return;
     }
 
-    Theme::create_theme_dirs(dir).unwrap_or_default(); // create all dirs just once
+    Theme::create_theme_dirs(dir.clone()).unwrap_or_default(); // create all dirs just once
 
     if input
         .remove("pagetoc")
         .map_or(false, |p| p.as_bool().unwrap_or(false))
     {
-        Theme::from(CssFile::Pagetoc, Ready::default(), dir).pagetoc(); // pagetoc defaults
+        Theme::from(CssFile::Pagetoc, Ready::default(), dir.clone()).pagetoc(); // pagetoc defaults
     }
 
     let default_map: HashMap<_, _> = DEFAULT.iter().map(|(css, item, _)| (*item, *css)).collect();
@@ -37,6 +37,6 @@ pub fn run(input: &Map<String, MdValue>, dir: &str) {
     config
         .into_iter()
         .filter(|(css, _)| **css != Invalid) // exlude use's invalid configs
-        .map(|(css, ready)| Theme::from(*css, Ready(ready), dir).process())
+        .map(|(css, ready)| Theme::from(*css, Ready(ready), dir.clone()).process())
         .last();
 }
