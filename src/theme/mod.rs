@@ -310,9 +310,9 @@ impl<'a> Default for Theme<'a> {
 
 impl<'a> Theme<'a> {
     #[rustfmt::skip]
-    pub fn from(cssfile: CssFile, ready: Ready<'a>, dir:&str) -> Self {
+    pub fn from(cssfile: CssFile, ready: Ready<'a>, dir: PathBuf) -> Self {
         Self { cssfile, ready, content: Content::default(), path: PathBuf::new(),
-        dir: PathBuf::from(dir), content_cmp: Content::default() }
+        dir, content_cmp: Content::default() }
     }
 
     /// canonical procedure
@@ -381,9 +381,8 @@ impl<'a> Theme<'a> {
     }
 
     /// create the dirs on demand
-    pub(self) fn create_theme_dirs(dir: &str) -> Result<()> {
-        std::fs::create_dir_all(PathBuf::from(dir).join("css"))
-            .map_err(|_| Error::DirNotCreated)?;
+    pub(self) fn create_theme_dirs(dir: PathBuf) -> Result<()> {
+        std::fs::create_dir_all(dir.join("css")).map_err(|_| Error::DirNotCreated)?;
         Ok(())
     }
 }
