@@ -1,33 +1,47 @@
-use clap::{App, Arg, ArgMatches, SubCommand};
-use mdbook::errors::Error;
-use mdbook::preprocess::{CmdPreprocessor, Preprocessor};
+// https://github.com/rust-lang/mdBook/blob/efb671aaf241b7f93597ac70178989a332fe85e0/examples/nop-preprocessor.rs
+use clap::{Arg, ArgMatches, Command};
+use mdbook::{
+    errors::Error,
+    preprocess::{CmdPreprocessor, Preprocessor},
+};
 use mdbook_theme::PreTheme;
 use semver::{Version, VersionReq};
-use std::io;
-use std::process;
+use std::{io, process::ExitCode};
 
-pub fn make_app() -> App<'static, 'static> {
-    App::new("mdbook-theme")
-        .about("A mdbook preprocessor to config theme for mdbook, especially making a pagetoc on the right.")
-        .subcommand(
-            SubCommand::with_name("supports")
-                .arg(Arg::with_name("renderer").required(true))
-                .about("Check whether a renderer is supported by this preprocessor"),
+type Return = Result<(), Error>;
+
+fn make_app() -> Command {
+    let sub = Command::new("supports")
+        .about("Check whether a renderer is supported by this preprocessor")
+        .arg(Arg::new("renderer").required(true));
+    Command::new("mdbook-theme")
+        .author("zjp")
+        .about(
+            "A mdbook preprocessor to config theme for mdbook, \
+            especially making a pagetoc on the right.",
         )
+        .subcommand(sub)
 }
 
-fn main() {
+// The return value needs to be an ExitCode due to
+// [`mdbook::preprocess::CmdPreprocessor`].
+fn main() -> ExitCode {
     let matches = make_app().get_matches();
-
     if let Some(sub_args) = matches.subcommand_matches("supports") {
-        handle_supports(sub_args);
-    } else if let Err(e) = handle_preprocessing() {
-        eprintln!("{}", e);
-        process::exit(1);
+        handle_supports(sub_args)
+    } else {
+        handle_preprocessing().map_or_else(
+            |err| {
+                eprintln!("{err:?}");
+                ExitCode::from(1)
+            },
+            |_| ExitCode::from(0),
+        )
     }
 }
 
-fn handle_preprocessing() -> Result<(), Error> {
+// stdin
+fn handle_preprocessing() -> Return {
     let (ctx, book) = CmdPreprocessor::parse_input(io::stdin())?;
 
     let book_version = Version::parse(&ctx.mdbook_version)?;
@@ -49,14 +63,14 @@ fn handle_preprocessing() -> Result<(), Error> {
     Ok(())
 }
 
-fn handle_supports(sub_args: &ArgMatches) -> ! {
-    let renderer = sub_args.value_of("renderer").expect("Required argument");
-    let supported = PreTheme.supports_renderer(renderer);
-
-    // Signal whether the renderer is supported by exiting with 1 or 0.
-    if supported {
-        process::exit(0);
+fn handle_supports(sub_args: &ArgMatches) -> ExitCode {
+    let renderer = sub_args
+        .get_one::<String>("renderer")
+        .expect("Required argument");
+    // whether the (html) renderer is supported
+    if PreTheme.supports_renderer(renderer) {
+        ExitCode::from(0)
     } else {
-        process::exit(1);
+        ExitCode::from(1)
     }
 }

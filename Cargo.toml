@@ -11,10 +11,10 @@ description = "A preprocessor and a backend to config theme for mdbook, especial
 exclude = ["examples", "CHANGELOG.md", "assets"]
 
 [dependencies]
-clap         = "2"
+clap         = "4"
 mdbook       = "0.4"
 semver       = "1"
-toml         = "0.5"
+toml         = "0.5" # wait for update of toml dep in mdbook
 serde_json   = "1"
 
 serde        = "1"
