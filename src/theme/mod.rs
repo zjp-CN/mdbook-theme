@@ -79,7 +79,7 @@ impl<'a> fmt::Debug for Value<'a> {
 }
 
 /// configs ready to go
-#[derive(Clone)]
+#[derive(Clone, Default)]
 pub struct Ready<'a>(Vec<(Item<'a>, Value<'a>)>);
 
 impl<'a> fmt::Display for Ready<'a> {
@@ -91,12 +91,6 @@ impl<'a> fmt::Display for Ready<'a> {
 impl<'a> fmt::Debug for Ready<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0.len())
-    }
-}
-
-impl<'a> Default for Ready<'a> {
-    fn default() -> Self {
-        Self(vec![])
     }
 }
 
@@ -141,14 +135,8 @@ impl<'a> Ready<'a> {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Default)]
 pub struct Content(String);
-
-impl Default for Content {
-    fn default() -> Self {
-        Self(String::from(""))
-    }
-}
 
 impl fmt::Display for Content {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -354,7 +342,7 @@ impl<'a> Theme<'a> {
     /// process contents of different files
     #[rustfmt::skip]
     fn content_process(&mut self, filename: Option<&str>) {
-        match filename.map_or_else(|| self.cssfile, |f| CssFile::variant(f)) {
+        match filename.map_or_else(|| self.cssfile, CssFile::variant) {
             CssFile::Custom(f) => self.content_process(Some(f)),
             CssFile::Variables => self.process_variables(),
             CssFile::General   => self.process_general(),

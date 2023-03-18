@@ -122,7 +122,7 @@ impl Default for Ace {
 /// find the positions of double quotation marks behind cssClass or cssText
 /// target: "cssClass=\"" | "cssText=\""
 fn find(content: &str, target: &str) -> Result<std::ops::Range<usize>> {
-    let p1 = content.find(&target).ok_or(Error::StrNotFound)? + target.len();
+    let p1 = content.find(target).ok_or(Error::StrNotFound)? + target.len();
     let p2 = p1 + content[p1..].find('"').ok_or(Error::StrNotFound)?;
     Ok(p1..p2)
 }
