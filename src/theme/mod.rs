@@ -399,7 +399,11 @@ impl<'a> Theme<'a> {
 
     /// update content in `index.hbs`, if and only if `pagetoc = true` for now
     fn process_index(&mut self) {
-        let insert = r#" <!-- Page table of contents -->
+        let comment = "<!-- Page table of contents -->";
+        if self.content.get().contains(comment) {
+            return;
+        }
+        let insert = r#" {comment}
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
                         "#;
