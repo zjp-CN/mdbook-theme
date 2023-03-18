@@ -45,15 +45,21 @@ pub struct Item<'a>(&'a str);
 
 /// useful when looking up in `HashMap<&Item, _>` just via `HashMap<&str, _>`
 impl<'a> Borrow<str> for Item<'a> {
-    fn borrow(&self) -> &str { self.0 }
+    fn borrow(&self) -> &str {
+        self.0
+    }
 }
 
 impl<'a> Item<'a> {
-    pub fn get(&self) -> &str { self.0 }
+    pub fn get(&self) -> &str {
+        self.0
+    }
 }
 
 impl<'a> fmt::Debug for Item<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
 }
 
 /// by default or specified by a user
@@ -61,11 +67,15 @@ impl<'a> fmt::Debug for Item<'a> {
 pub struct Value<'a>(&'a str);
 
 impl<'a> Value<'a> {
-    pub fn get(&self) -> &str { self.0 }
+    pub fn get(&self) -> &str {
+        self.0
+    }
 }
 
 impl<'a> fmt::Debug for Value<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
 }
 
 /// configs ready to go
@@ -79,11 +89,15 @@ impl<'a> fmt::Display for Ready<'a> {
 }
 
 impl<'a> fmt::Debug for Ready<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "{}", self.0.len()) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.0.len())
+    }
 }
 
 impl<'a> Default for Ready<'a> {
-    fn default() -> Self { Self(vec![]) }
+    fn default() -> Self {
+        Self(vec![])
+    }
 }
 
 /// get `Ready` by using `iter.collect()`
@@ -115,25 +129,37 @@ impl<'a> Ready<'a> {
 
     /// help to simplify `.get()`
     fn from(css: CssFile) -> Self {
-        DEFAULT.iter().filter(|(c, _, _)| *c == css).map(|(_, i, v)| (*i, *v)).collect()
+        DEFAULT
+            .iter()
+            .filter(|(c, _, _)| *c == css)
+            .map(|(_, i, v)| (*i, *v))
+            .collect()
     }
 
-    pub fn item_value(&self) -> &Vec<(Item, Value)> { &self.0 }
+    pub fn item_value(&self) -> &Vec<(Item, Value)> {
+        &self.0
+    }
 }
 
 #[derive(Clone, PartialEq)]
 pub struct Content(String);
 
 impl Default for Content {
-    fn default() -> Self { Self(String::from("")) }
+    fn default() -> Self {
+        Self(String::from(""))
+    }
 }
 
 impl fmt::Display for Content {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.0.fmt(f) }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
 }
 
 impl fmt::Debug for Content {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Content(...)") }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Content(...)")
+    }
 }
 
 impl Content {
@@ -161,15 +187,22 @@ impl Content {
         use std::fs::File;
         use std::io::Read;
         let mut s = String::new();
-        File::open(dir.join(filename)).unwrap().read_to_string(&mut s).unwrap();
+        File::open(dir.join(filename))
+            .unwrap()
+            .read_to_string(&mut s)
+            .unwrap();
         Content(s)
     }
 
     /// for viewing the content
-    pub fn get(&self) -> &str { &self.0 }
+    pub fn get(&self) -> &str {
+        &self.0
+    }
 
     /// for modifying the content
-    pub fn get_mut(&mut self) -> &mut String { &mut self.0 }
+    pub fn get_mut(&mut self) -> &mut String {
+        &mut self.0
+    }
 
     /// Update the content: directly relapce a value.
     /// Useful when the item is exact or replace the first one.
@@ -211,24 +244,29 @@ impl Content {
     /// content processing in `variables.css`
     fn variables(&mut self, item: &str, value: &str) {
         if item == "mobile-content-max-width" {
+            let media_on_screen = "@media only screen and (max-width:1439px)";
+            if self.get().contains(media_on_screen) {
+                return;
+            }
             let content = format!(
-                                  "\n@media only screen and (max-width:1439px) {{
+                "\n{media_on_screen} {{
  :root{{
     --content-max-width: {};
   }}
 }}\n\n",
-                                  value
+                value
             );
             self.insert(&content, "}", "/* Themes */").unwrap();
         } else if item.starts_with("light")
-                  | item.starts_with("ayu")
-                  | item.starts_with("rust")
-                  | item.starts_with("navy")
-                  | item.starts_with("coal")
+            | item.starts_with("ayu")
+            | item.starts_with("rust")
+            | item.starts_with("navy")
+            | item.starts_with("coal")
         {
             self.fore_arg(item, value);
         } else if self.replace(item, value).is_err() {
-            self.insert(&format!("\n    --{}: {};\n", item, value), ":root", "}\n").unwrap();
+            self.insert(&format!("\n    --{}: {};\n", item, value), ":root", "}\n")
+                .unwrap();
         }
     }
 
@@ -264,19 +302,21 @@ pub struct Theme<'a> {
     pub cssfile: CssFile,
     pub content: Content, // ultimate str to be processed
     content_cmp: Content,
-    pub ready:   Ready<'a>,
-    pub dir:     PathBuf,
-    path:        PathBuf,
+    pub ready: Ready<'a>,
+    pub dir: PathBuf,
+    path: PathBuf,
 }
 
 impl<'a> Default for Theme<'a> {
     fn default() -> Self {
-        Self { cssfile:     CssFile::Custom(""),
-               content:     Content::default(),
-               ready:       Ready::default(),
-               dir:         PathBuf::new(),
-               content_cmp: Content::default(),
-               path:        PathBuf::new(), }
+        Self {
+            cssfile: CssFile::Custom(""),
+            content: Content::default(),
+            ready: Ready::default(),
+            dir: PathBuf::new(),
+            content_cmp: Content::default(),
+            path: PathBuf::new(),
+        }
     }
 }
 
@@ -288,7 +328,9 @@ impl<'a> Theme<'a> {
     }
 
     /// canonical procedure
-    pub fn process(self) -> Self { self.cssfile().content().write_theme_file() }
+    pub fn process(self) -> Self {
+        self.cssfile().content().write_theme_file()
+    }
 
     /// Give a default or custom virtual css file marked to help content processing.
     fn cssfile(mut self) -> Self {
@@ -342,8 +384,8 @@ impl<'a> Theme<'a> {
     /// create a css file on demand
     fn write_theme_file(self) -> Self {
         if self.content != self.content_cmp
-           || ((self.cssfile == CssFile::PagetocJs || self.cssfile == CssFile::PagetocCss)
-               && !self.path.exists())
+            || ((self.cssfile == CssFile::PagetocJs || self.cssfile == CssFile::PagetocCss)
+                && !self.path.exists())
         {
             std::fs::write(&self.path, self.content.get().as_bytes()).unwrap();
         }
@@ -352,7 +394,8 @@ impl<'a> Theme<'a> {
 
     /// create the dirs on demand
     pub(self) fn create_theme_dirs(dir: &str) -> Result<()> {
-        std::fs::create_dir_all(PathBuf::from(dir).join("css")).map_err(|_| Error::DirNotCreated)?;
+        std::fs::create_dir_all(PathBuf::from(dir).join("css"))
+            .map_err(|_| Error::DirNotCreated)?;
         Ok(())
     }
 }
@@ -372,7 +415,9 @@ impl<'a> Theme<'a> {
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
                         "#;
-        self.content.insert(insert, "<main>", "{{{ content }}}").unwrap();
+        self.content
+            .insert(insert, "<main>", "{{{ content }}}")
+            .unwrap();
     }
 
     /// update content in `css/general.css`

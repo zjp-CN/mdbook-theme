@@ -7,12 +7,12 @@ use serde_derive::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(default, rename_all = "kebab-case")]
 pub struct Ace {
-    pub theme_white:     String,
-    pub theme_dark:      String,
+    pub theme_white: String,
+    pub theme_dark: String,
     pub below_build_dir: bool,
-    pub build_dir:       PathBuf, // generally `full-path/book`
-    pub theme_dir:       PathBuf, // generally `theme`
-    pub destination:     PathBuf, // generally `full-path/book/theme-ace`
+    pub build_dir: PathBuf,   // generally `full-path/book`
+    pub theme_dir: PathBuf,   // generally `theme`
+    pub destination: PathBuf, // generally `full-path/book/theme-ace`
 }
 
 impl Ace {
@@ -28,7 +28,10 @@ impl Ace {
         let path = self.theme_dir.join(ace_file);
 
         if path.exists() || self.theme_dir.join("ace.css").exists() {
-            std::fs::File::open(path).unwrap().read_to_string(&mut css_text).unwrap();
+            std::fs::File::open(path)
+                .unwrap()
+                .read_to_string(&mut css_text)
+                .unwrap();
         } else if let Some(v) = self.defult_css(dark) {
             css_text = String::from(unsafe { std::str::from_utf8_unchecked(v) });
         } else {
@@ -55,12 +58,19 @@ impl Ace {
 
     /// get the target content to be written
     pub fn write(&self, css_: (String, String), dark: bool) -> Result<()> {
-        let file = if dark { "theme-tomorrow_night.js" } else { "theme-dawn.js" };
+        let file = if dark {
+            "theme-tomorrow_night.js"
+        } else {
+            "theme-dawn.js"
+        };
         let path = &self.build_dir.join("html").join(file);
 
         let (css_class, css_text) = css_;
         let mut content = String::new();
-        std::fs::File::open(path).unwrap().read_to_string(&mut content).unwrap();
+        std::fs::File::open(path)
+            .unwrap()
+            .read_to_string(&mut content)
+            .unwrap();
         content.replace_range(find(&content, "cssClass=\"")?, &css_class);
         content.replace_range(find(&content, "cssText=\"")?, &css_text);
 
@@ -91,17 +101,21 @@ impl Ace {
 
     /// Remove `book/theme-ace`: if it's not empty, it'll not be removed.
     /// But for now, it should be empty.
-    fn remove_destination(&self) { std::fs::remove_dir(&self.destination).unwrap_or_default(); }
+    fn remove_destination(&self) {
+        std::fs::remove_dir(&self.destination).unwrap_or_default();
+    }
 }
 
 impl Default for Ace {
     fn default() -> Self {
-        Self { theme_white:     String::from(""),
-               theme_dark:      String::from(""),
-               build_dir:       PathBuf::from(""),
-               theme_dir:       PathBuf::from(""),
-               destination:     PathBuf::from(""),
-               below_build_dir: true, }
+        Self {
+            theme_white: String::from(""),
+            theme_dark: String::from(""),
+            build_dir: PathBuf::from(""),
+            theme_dir: PathBuf::from(""),
+            destination: PathBuf::from(""),
+            below_build_dir: true,
+        }
     }
 }
 
