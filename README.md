@@ -403,11 +403,11 @@ Fisrt two suggestions also suits more-than-once `mdbook build` in order to reduc
 
 before : [https://doc.rust-lang.org/book](https://doc.rust-lang.org/book)
 
-![image.png](assets/image-20210623231453-0102ygv.png)
+![image](https://user-images.githubusercontent.com/25300418/230078113-72976162-667a-4986-9b49-18e309db76ad.png)
 
 after :
 
-![image.png](assets/image-20210623231552-iwnqhs0.png)
+![image](https://user-images.githubusercontent.com/25300418/230078346-1154052a-3869-47d6-995a-9c1a147958a3.png)
 
 ## Rust Reference
 
@@ -424,13 +424,15 @@ after :
 
 before : [https://doc.rust-lang.org/nightly/reference](https://doc.rust-lang.org/nightly/reference)
 
-![image.png](assets/image-20210623232913-ex16lxj.png)
+![image](https://user-images.githubusercontent.com/25300418/230078462-49634775-4743-4d6f-b425-5db693017ae6.png)
 
 after :
 
-![image.png](assets/image-20210623232802-551j8ck.png)
+![image](https://user-images.githubusercontent.com/25300418/230078568-be9ca693-95d8-4265-bb61-5af7aaa8a919.png)
 
 ## Rust by Example
+
+**Change the code editor theme**
 
 ```diff
 +[preprocessor.theme]
@@ -448,22 +450,22 @@ after :
 
 before : [https://doc.rust-lang.org/stable/rust-by-example](https://doc.rust-lang.org/stable/rust-by-example)
 
-![image.png](assets/image-20210623234530-760uke0.png)
+![image](https://user-images.githubusercontent.com/25300418/230078644-75016aa9-c128-4592-9bdf-ec3d54842665.png)
 
-![image.png](assets/image-20210623235115-5t5j2z2.png)
+![image](https://user-images.githubusercontent.com/25300418/230078755-e2123299-75ee-4f79-9540-4b6ee63d28ab.png)
 
 after :
 
-![image.png](assets/image-20210623235016-8d4be37.png)
+![image](https://user-images.githubusercontent.com/25300418/230078884-f0f220d1-bf46-472a-8461-05f51a2a2def.png)
 
-![image.png](assets/image-20210623234953-bs9jgtf.png)
+![image](https://user-images.githubusercontent.com/25300418/230079268-5bcc33be-7a50-4346-8095-4b6bfaa63e2e.png)
 
 ## Others
 
 Rust API Guidelines (Chinese Version): [https://zjp-cn.github.io/api-guidelines](https://zjp-cn.github.io/api-guidelines)
 
-![image.png](assets/image-20210623235339-kqxm3ur.png)
+![image](https://user-images.githubusercontent.com/25300418/230079349-cc2b503e-0b05-4b5e-a8ec-e4500d20b055.png)
 
 The Little Book of Rust Macros (Updated & Chinese Version): [https://zjp-cn.github.io/tlborm](https://zjp-cn.github.io/tlborm)
 
-![image.png](assets/image-20210623235527-jqu0pto.png)
+![image](https://user-images.githubusercontent.com/25300418/230079424-0d727790-18c7-40f6-ae31-a4c8f16fa079.png)
