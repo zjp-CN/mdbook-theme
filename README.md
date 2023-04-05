@@ -70,49 +70,49 @@ additional-js  = ["theme/pagetoc.js"]
 ```toml
 [preprocessor.theme]
 # enable pagetoc (toc on the right)
-pagetoc                   = true
+pagetoc = true
 
 # some variables related (defined in theme/css/variables.css)
 # `content-max-width` + `pagetoc-width` = 95% seems the best
-pagetoc-width            = "13%"
-content-max-width        = "82%"
-pagetoc-fontsize         = "14.5px"
-sidebar-width            = "300px"
-menu-bar-height          = "40px"   # memu-bar = the bar on the top
-page-padding             = "15px"
+pagetoc-width = "13%"
+content-max-width = "82%"
+pagetoc-fontsize = "14.5px"
+sidebar-width = "300px"
+menu-bar-height = "40px"   # memu-bar = the bar on the top
+page-padding = "15px"
 mobile-content-max-width = "98%"
 
 # layout
-content-padding           = "0 10px"
-content-main-margin-left  = "2%"
+content-padding = "0 10px"
+content-main-margin-left = "2%"
 content-main-margin-right = "2%"
-nav-chapters-max-width    = "auto"
-nav-chapters-min-width    = "auto"
-chapter-line-height       = "2em"
-section-line-height       = "1.5em"
+nav-chapters-max-width = "auto"
+nav-chapters-min-width = "auto"
+chapter-line-height = "2em"
+section-line-height = "1.5em"
 
 # modify some fontsizes
-root-font-size    = "70%"    # control the main font-size
-body-font-size    = "1.5rem"
-code-font-size    = "0.9em"
+root-font-size = "70%"    # control the main font-size
+body-font-size = "1.5rem"
+code-font-size = "0.9em"
 sidebar-font-size = "1em"    # sidebar = toc on the left
 
 # modify some colors under ayu/coal/light/navy/rust theme
-coal-inline-code-color  = "#ffb454"
+coal-inline-code-color = "#ffb454"
 light-inline-code-color = "#F42C4C"
-navy-inline-code-color  = "#ffb454"
-rust-inline-code-color  = "#F42C4C"
-light-links             = "#1f1fff"
-rust-links              = "#1f1fff"
+navy-inline-code-color = "#ffb454"
+rust-inline-code-color = "#F42C4C"
+light-links = "#1f1fff"
+rust-links = "#1f1fff"
 
 # if true, never read and touch the files in theme dir
 turn-off = false
 
 # If you set `pagetoc = true`, you need to set the following as well:
 [output.html]
-theme          = "theme" # this is the default if not explicitly set
+theme = "theme" # this is the default if not explicitly set
 additional-css = ["theme/pagetoc.css"]  # This tool will produce it!
-additional-js  = ["theme/pagetoc.js"]   # This tool will produce it!
+additional-js = ["theme/pagetoc.js"]   # This tool will produce it!
 ```
 
 Attention: local files in `theme` dir are prior. So if you need or modify a theme based on the
@@ -405,7 +405,7 @@ before : [https://doc.rust-lang.org/book](https://doc.rust-lang.org/book)
 
 ![image.png](assets/image-20210623231453-0102ygv.png)
 
-after : [http://129.28.186.100/rust-book](http://129.28.186.100/rust-book)
+after :
 
 ![image.png](assets/image-20210623231552-iwnqhs0.png)
 
@@ -426,7 +426,7 @@ before : [https://doc.rust-lang.org/nightly/reference](https://doc.rust-lang.org
 
 ![image.png](assets/image-20210623232913-ex16lxj.png)
 
-after : [http://129.28.186.100/rust-reference](http://129.28.186.100/rust-reference)
+after :
 
 ![image.png](assets/image-20210623232802-551j8ck.png)
 
@@ -452,7 +452,7 @@ before : [https://doc.rust-lang.org/stable/rust-by-example](https://doc.rust-lan
 
 ![image.png](assets/image-20210623235115-5t5j2z2.png)
 
-after : [http://129.28.186.100/rust-by-example](http://129.28.186.100/rust-by-example)
+after :
 
 ![image.png](assets/image-20210623235016-8d4be37.png)
 
