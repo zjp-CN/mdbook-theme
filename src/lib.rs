@@ -2,6 +2,7 @@ use mdbook::{
     book::Book,
     errors,
     preprocess::{Preprocessor, PreprocessorContext},
+    Config,
 };
 use std::{
     path::{Path, PathBuf},
@@ -40,9 +41,14 @@ pub type Result<T> = std::result::Result<T, Error>;
 
 pub struct PreTheme;
 
-/// `./theme` dir
-pub fn theme_dir(root: &Path) -> PathBuf {
-    root.join("theme")
+/// absoulte path to theme dir:
+/// if `output.html.theme` is not provided, it defaults to `theme/`
+pub fn theme_dir(root: &Path, config: &Config) -> PathBuf {
+    let theme_dir_ = config
+        .get("output.html.theme")
+        .and_then(|v| v.as_str())
+        .unwrap_or("theme");
+    root.join(theme_dir_)
 }
 
 impl Preprocessor for PreTheme {
@@ -51,7 +57,7 @@ impl Preprocessor for PreTheme {
     }
 
     fn run(&self, ctx: &PreprocessorContext, book: Book) -> result::Result<Book, errors::Error> {
-        let dir = theme_dir(&ctx.root);
+        let dir = theme_dir(&ctx.root, &ctx.config);
         if let Some(theme) = ctx.config.get_preprocessor(self.name()) {
             theme::config::run(theme, dir);
         }

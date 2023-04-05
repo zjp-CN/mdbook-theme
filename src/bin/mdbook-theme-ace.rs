@@ -10,7 +10,7 @@ fn main() -> Result<()> {
         .ok_or(Error::DeserializedFailed)?;
     cfg.build_dir = ctx.root.join(&ctx.config.build.build_dir);
     cfg.destination = ctx.root.join(&ctx.destination);
-    cfg.theme_dir = theme_dir(&ctx.root);
+    cfg.theme_dir = theme_dir(&ctx.root, &ctx.config);
 
     cfg.run()
 }
