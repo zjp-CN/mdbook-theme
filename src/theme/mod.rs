@@ -402,12 +402,14 @@ impl<'a> Theme<'a> {
         if self.content.get().contains(comment) {
             return;
         }
-        let insert = r#" {comment}
+        let insert = format!(
+            r#" {comment}
                         <div class="sidetoc"><nav class="pagetoc"></nav></div>
 
-                        "#;
+                        "#
+        );
         self.content
-            .insert(insert, "<main>", "{{{ content }}}")
+            .insert(&insert, "<main>", "{{{ content }}}")
             .unwrap();
     }
 
