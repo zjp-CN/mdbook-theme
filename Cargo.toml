@@ -1,7 +1,7 @@
 [package]
 name = "mdbook-theme"
-version = "0.1.4"
-authors = ["zjpCN <jiping_zhou@foxmail.com>"]
+version = "0.1.5"
+authors = ["zjp-CN <jiping_zhou@foxmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
 readme = "README.md"
