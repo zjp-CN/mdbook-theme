@@ -17,12 +17,8 @@ jobs:
     # Runs when the commit message contains "[Release]"
     if: "contains(github.event.head_commit.message, '[Release]')"
     steps:
-      - uses: actions/checkout@v2
-      - name: Install Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Build
         run: cargo build --release
 
@@ -45,7 +41,7 @@ jobs:
       - name: UPX on Ubuntu
         # not support on mac
         if: matrix.os == 'ubuntu-latest' 
-        uses: crazy-max/ghaction-upx@v1
+        uses: crazy-max/ghaction-upx@v3
         with:
           version: latest
           files: |
@@ -69,7 +65,7 @@ jobs:
           tar -C ./target/release/ -czvf ./release/mdbook-theme_win.tar.gz ./mdbook-theme.exe ./mdbook-theme-ace.exe
       - name: UPX on Win
         if: matrix.os == 'windows-latest'
-        uses: crazy-max/ghaction-upx@v1
+        uses: crazy-max/ghaction-upx@v3
         with:
           version: latest
           files: |
@@ -83,15 +79,11 @@ jobs:
       # This will draft a new release & will attach the binaries produced by the above outputs.
       # You still need to publish this release though after job ends.
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
           draft: true
           files: |
             ./release/*.tar.gz
             ./release/*.zip
             ./release/*.deb
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # You don't need to add this in secrets it's by default.
 
