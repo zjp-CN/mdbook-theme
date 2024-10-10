@@ -32,12 +32,10 @@ then put them in your system path.
 
 ```yml
 - name: Setup mdbook-theme latest
+  env:
+    GH_TOKEN: ${{ github.token }}
   run: |
-    curl -s https://api.github.com/repos/zjp-CN/mdbook-theme/releases/latest \
-         | grep browser_download_url \
-         | grep mdbook-theme_linux \
-         | cut -d '"' -f 4 \
-         | wget -qi -
+    gh release download -R zjp-CN/mdbook-theme -p mdbook-theme_linux.tar.gz
     tar -xvzf mdbook-theme_linux.tar.gz
     echo $PWD >> $GITHUB_PATH
 ```
