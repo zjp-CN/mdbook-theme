@@ -2,6 +2,9 @@ A preprocessor and a backend to config themes for [mdbook](https://github.com/ru
 especially creating a pagetoc on the right and setting full color themes from the offical 
 [ace](https://github.com/ajaxorg/ace) editor.
 
+> Warning: this repo is not actively maintained. Variable setting from book.toml may no longer work.
+> You can always modify theme files without this tool.
+
 # installation
 
 `mdbook-theme` package includes two CLIs :
