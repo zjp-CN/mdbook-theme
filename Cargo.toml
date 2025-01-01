@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-theme"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["zjp-CN <jiping_zhou@foxmail.com>"]
 edition = "2018"
 license = "MIT OR Apache-2.0"
@@ -12,7 +12,7 @@ exclude = ["examples", "CHANGELOG.md", "assets"]
 
 [dependencies]
 clap         = "4"
-mdbook       = "0.4"
+mdbook       = "0.4.43"
 semver       = "1"
 toml         = "0.5" # wait for update of toml dep in mdbook
 serde_json   = "1"
