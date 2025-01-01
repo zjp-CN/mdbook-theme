@@ -6,7 +6,7 @@ pub fn run(input: &Map<String, MdValue>, dir: PathBuf) {
     let mut input = input.to_owned();
     if input
         .remove("turn-off")
-        .map_or(false, |p| p.as_bool().unwrap_or(false))
+        .is_some_and(|p| p.as_bool().unwrap_or(false))
     {
         return;
     }
@@ -15,7 +15,7 @@ pub fn run(input: &Map<String, MdValue>, dir: PathBuf) {
 
     if input
         .remove("pagetoc")
-        .map_or(false, |p| p.as_bool().unwrap_or(false))
+        .is_some_and(|p| p.as_bool().unwrap_or(false))
     {
         Theme::from(CssFile::Pagetoc, Ready::default(), dir.clone()).pagetoc(); // pagetoc defaults
     }

@@ -14,6 +14,7 @@ pub mod default;
 /// 1. pagetoc related
 /// 2. fontsize related
 /// 3. color related
+/// 
 /// but in practice all configs are processed in unit of single file.
 #[rustfmt::skip]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -44,19 +45,19 @@ impl CssFile {
 pub struct Item<'a>(&'a str);
 
 /// useful when looking up in `HashMap<&Item, _>` just via `HashMap<&str, _>`
-impl<'a> Borrow<str> for Item<'a> {
+impl Borrow<str> for Item<'_> {
     fn borrow(&self) -> &str {
         self.0
     }
 }
 
-impl<'a> Item<'a> {
+impl Item<'_> {
     pub fn get(&self) -> &str {
         self.0
     }
 }
 
-impl<'a> fmt::Debug for Item<'a> {
+impl fmt::Debug for Item<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
@@ -66,13 +67,13 @@ impl<'a> fmt::Debug for Item<'a> {
 #[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Value<'a>(&'a str);
 
-impl<'a> Value<'a> {
+impl Value<'_> {
     pub fn get(&self) -> &str {
         self.0
     }
 }
 
-impl<'a> fmt::Debug for Value<'a> {
+impl fmt::Debug for Value<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.0.fmt(f)
     }
@@ -82,13 +83,13 @@ impl<'a> fmt::Debug for Value<'a> {
 #[derive(Clone, Default)]
 pub struct Ready<'a>(Vec<(Item<'a>, Value<'a>)>);
 
-impl<'a> fmt::Display for Ready<'a> {
+impl fmt::Display for Ready<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_list().entries(self.0.iter()).finish()
     }
 }
 
-impl<'a> fmt::Debug for Ready<'a> {
+impl fmt::Debug for Ready<'_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0.len())
     }
@@ -106,7 +107,7 @@ impl<'a> FromIterator<(Item<'a>, Value<'a>)> for Ready<'a> {
 }
 
 /// yield default config or merge configs
-impl<'a> Ready<'a> {
+impl Ready<'_> {
     /// To get a default config from a specific cssfile, which need modifying.
     /// See [`DEFAULT`] to check detailed configs.
     ///
@@ -276,7 +277,7 @@ impl Content {
     /// `fore` may have multiple meaning, and it's complex:
     /// 1. one word begins with/without `.` , or even `:` : `.content` | `body` | `:root`
     /// 2. one word will very likely join more words with ` ` or `-`:
-    /// `.content main` | `.nav-chapters`
+    ///    `.content main` | `.nav-chapters`
     fn fore_check<'a>(item: &'a str, n: usize, dot: bool, joint: &'a str) -> (String, &'a str) {
         let v: Vec<&str> = item.splitn(n, '-').collect();
         let d = if dot { "." } else { "" };
@@ -295,7 +296,7 @@ pub struct Theme<'a> {
     path: PathBuf,
 }
 
-impl<'a> Default for Theme<'a> {
+impl Default for Theme<'_> {
     fn default() -> Self {
         Self {
             cssfile: CssFile::Custom(""),
@@ -388,7 +389,7 @@ impl<'a> Theme<'a> {
 }
 
 /// content processing
-impl<'a> Theme<'a> {
+impl Theme<'_> {
     /// update content in `variables.css`
     fn process_variables(&mut self) {
         for (item, value) in self.ready.item_value() {

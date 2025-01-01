@@ -38,7 +38,7 @@ impl Ace {
             return Err(Error::AceNotFound);
         }
 
-        css_text = css_text.replace(|x| x == '\n' || x == '"', " ");
+        css_text = css_text.replace(['\n', '"'], " ");
         let p1 = css_text.find(".ace-").ok_or(Error::StrNotFound)?;
         let css_class =
             css_text[p1 + 1..p1 + css_text[p1..].find(' ').ok_or(Error::StrNotFound)?].to_string();
